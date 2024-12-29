@@ -1,10 +1,15 @@
 
 import MenuBar from "../ui-components/MenuBar";
+import FooterMenu from "../ui-components/FooterMenu";
 
 const HomePage = () => {
     return(
-        <main>  
+        <main>
+            <div className="home-search ">
+
+            </div>  
            <MenuBar/>
+           <FooterMenu/>
         </main>
     )
 }

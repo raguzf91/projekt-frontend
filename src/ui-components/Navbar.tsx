@@ -28,35 +28,38 @@ const Navbar = () => {
             {(loginVisible || registerVisible) && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
-            <nav className="navbar w-full flex items-center gap-96  mr-6 p-8 border border-b-gray-500">
-                <img src={logo} alt="logo" className='w-36'/>
-                <div className="middle-navbar w-5/12 rounded-3xl border flex items-center justify-between space-x-2">
+            <nav className="navbar w-full flex justify-between items-center xl:gap-4 xl:p-4   2xl:mr-4 2xl:p-8 border border-b-gray-500">
+                <img src={logo} alt="logo" className='2xl:w-48 xl:w-32'/>
+                <div className="middle-navbar xl:ml-18 2xl:ml-24   rounded-3xl border flex items-center justify-between space-x-2">
                     <div className='input-field p-2 flex-grow flex flex-col'>
                         <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
-                        <input type="text" id="default-input-1" placeholder='Potraži destinaciju' className="outline-none text-lg rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        <input type="text" id="default-input-1" placeholder='Potraži destinaciju' className="outline-none 2xl:text-lg rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                     </div>
-                    <div className="border-l-4 h-12"></div>
+                    <div className="border-l-4 xl:h-8 2xl:h-12"></div>
                     <div className='input-field p-2 flex-grow flex flex-col'>
                         <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Kada</label>
-                        <input type="text" id="default-input-2" placeholder='Dodaj datume' className="outline-none text-lg rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        <input type="text" id="default-input-2" placeholder='Dodaj datume' className="outline-none 2xl:text-lg rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                     </div>
-                    <div className="border-l-4 h-12"></div>
+                    <div className="border-l-4 xl:h-8 2xl:h-12"></div>
                     <div className='input-field p-2 flex-grow flex flex-col'>
                         <label htmlFor="default-input-3" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Tko</label>
-                        <input type="text" id="default-input-3" placeholder='Dodaj goste' className="outline-none text-lg rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        <input type="text" id="default-input-3" placeholder='Dodaj goste' className="outline-none 2xl:text-lg rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                     </div>
-                    <div className='search-icon'>
-                        <FaSearch className='w-12 h-12 text-white bg-red-500 rounded-3xl p-3 mr-6' />
+                    <div className='input-field p-2 flex-grow flex flex-col'>
+                        <div className='search-icon'>
+                            <FaSearch className='xl:w-9 xl:h-9 xl:p-2 2xl:w-12 2xl:h-12 text-white bg-red-500 rounded-3xl 2xl:p-3 2xl:mr-6' />
+                        </div>
                     </div>
+                    
                 </div>
-                <div className='right-navbar flex gap-20'>
-                    <div className='w-40 h-14 hover:bg-gray-100  cursor-pointer rounded-xl flex items-center content-center justify-center '>  
+                <div className='right-navbar flex xl:gap-3 xl:mr-3 2xl:gap-3  2xl:mr-4'>
+                    <div className='2xl:w-40 2xl:h-14 hover:bg-gray-100  cursor-pointer rounded-xl flex items-center content-center justify-center '>  
                         <a className='upper-right-navbar-text  text-lg font-semibold text-center  '>Airbnb tvoj dom</a>
                     </div>
 
                     <div className='relative'>
                             <div className='profile-icon relative' onClick={toggleDropdown}>
-                                <CgProfile className='w-14 h-14 p-2 ' />
+                                <CgProfile className='xl:w-9 xl:h-9 2xl:w-14 2xl:h-14 2xl:p-2 ' />
                                 <div className='absolute inset-0 border-4 border-transparent cursor-pointer hover:border-gray-700 rounded-full'></div>
                             </div>
                         {dropdownVisible && (
