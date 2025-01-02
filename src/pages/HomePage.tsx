@@ -6,9 +6,8 @@ const HomePage = () => {
     return(
         <main>
             <div className="home-search ">
-
             </div>  
-           <MenuBar/>
+           <MenuBar />
            <FooterMenu/>
         </main>
     )

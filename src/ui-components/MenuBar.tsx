@@ -14,8 +14,13 @@ import { IoIosOptions } from "react-icons/io";
 import { LuFlame } from "react-icons/lu";
 import { IoIosArrowDropright } from "react-icons/io";
 import { IoIosArrowDropleft } from "react-icons/io";
+import { useMediaQuery } from 'react-responsive';
 import "./MenuBar.css";
+
 const MenuBar = () => {
+
+    const isSmScreen = useMediaQuery({ query: '(max-width: 768px)' });
+
     /*
         handleClick function updates the clickedIndex state to the index of the clicked option
         and it checks if the current index is the same as the clickedIndex
@@ -56,14 +61,18 @@ const MenuBar = () => {
     return (
         <section className="menubar-section w-full flex justify-center  2xl:gap-8  2xl:mt-4 xl:mt-4">
             <div ref={containerRef} className="menubar-container overflow-x-auto flex 2xl:gap-4 xl:gap-2 m-4 ">
-            <button onClick={handleScrollLeft} className="absolute top-40   transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-gray-300">
+            <div className="blur-left absolute h-20 w-20 top-52 rounded-full left-0 bottom-0 bg-white blur-md pointer-events-none"></div>
+            <button onClick={handleScrollLeft} className="absolute  sm:top-32 xl:top-44 md:top-64 transform -translate-y-1/2 2xl:hidden 3xl:hidden bg-white p-2 rounded-full shadow-md hover:bg-gray-300 transition-all duration-200">
                 <IoIosArrowDropleft className="w-8 h-8 " />
             </button>
+            
+            
+            
             {options.map((option, index) => (
                 <div
                     key={option.id}
                     onClick={() => handleClick(index)}
-                    className={`option flex-row cursor-pointer ml-4  transition-all duration-200 hover:border-b-4 ${clickedIndex === index ? 'border-b-4 border-b-gray-700' : 'border-b-gray-200'}`}
+                    className={`option flex-row cursor-pointer ml-4  transition-all duration-200 hover:border-b-4 ${clickedIndex === index ? 'border-b-4 border-b-gray-700' : 'border-b-gray-200 hover:text-red-500'}`}
                 >
                      {option.icon && React.cloneElement(option.icon, { className: `w-20 h-10 xl:w-14 xl:h-8` })}
                     <p className={`text-center text-sm font-semibold pb-1   transition-all duration-200 ${clickedIndex === index ? 'whitespace-normal break-words ' : 'whitespace-nowrap overflow-hidden'}`}>
@@ -71,15 +80,24 @@ const MenuBar = () => {
                     </p>
                 </div>
             ))}
-            <button onClick={handleScrollRight} className="absolute right-36 top-40 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md hover:bg-gray-300">
-                <IoIosArrowDropright className="w-8 h-8 " />
-            </button>
+            
         </div>
         
-        <div className="filter flex justify-center xl:w-40 xl:h-16 2xl:w-44 2xl:h-16 mt-5 mr-4 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-100 items-center content-center hover:border-4 hover:border-gray-700 gap-6">
-            <IoIosOptions className="xl:w-8 xl:h-8 2xl:w-14 2xl:h-10" />
-            <p className="text-center text-sm font-bold pb-1">Filteri</p>
-        </div>
+            <div className="right-menubar flex items-center  ">
+                <div className="rounded-full  2xl:hidden w-12 h-12 flex items-center justify-center bg-white shadow-md hover:bg-gray-300 transition-all duration-200 cursor-pointer">
+                    <IoIosArrowDropright onClick={handleScrollRight} className="w-9 h-9    mr-1 mb-1 rounded-full transition-all duration-200 " />
+                </div>
+                {!isSmScreen && 
+                     <div className="filter flex justify-center mt-3 mb-3 mr-3 h-12 w-28  rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-100 items-center content-center border-2 hover:border-gray-700 gap-6">
+                     <IoIosOptions className="w-8 h-8  2xl:w-9 2xl:h-9" />
+                     <p className="text-center text-md font-bold pb-1 pr-2">Filtri</p>
+                 </div>
+                }
+               
+            </div>
+            
+        
+        
         </section>
         
     );
