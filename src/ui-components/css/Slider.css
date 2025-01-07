@@ -1,0 +1,54 @@
+/* Slider.css */
+input[type="range"] {
+    -webkit-appearance: none; /* Remove default appearance */
+    appearance: none; /* Remove default appearance */
+    width: 100%;
+    height: 0.5rem; /* Adjust the height of the track */
+    outline: none;
+    opacity: 0.7;
+    
+    transition: opacity 0.2s;
+    
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remove default appearance */
+    appearance: none;
+    width: 2rem; /* Thumb width */
+    height: 2rem; /* Thumb height */
+    background: #ffffff; /* Thumb color */
+    cursor: pointer;
+    border-radius: 50%; /* Make the thumb round */
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 2rem; /* Thumb width */
+    height: 2rem; /* Thumb height */
+    background: #ffffff; /* Thumb color */
+    cursor: pointer;
+    border-radius: 50%; /* Make the thumb round */
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    -webkit-appearance: none; /* Remove default appearance */
+    appearance: none;
+    width: 2rem; /* Thumb width */
+    height: 2rem; /* Thumb height */
+    background: #ffffff; /* Thumb color */
+    cursor: pointer;
+    border-radius: 50%; /* Make the thumb round */
+    background: darkgrey;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+    width: 2rem; /* Thumb width */
+    height: 2rem; /* Thumb height */
+    background: #ffffff; /* Thumb color */
+    cursor: pointer;
+    border-radius: 50%; /* Make the thumb round */
+    background: darkgrey;
+}
