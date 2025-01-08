@@ -8,9 +8,12 @@ import Signup from './Signup';
 import { CSSTransition } from 'react-transition-group';
 import { useMediaQuery } from 'react-responsive';
 import { IoIosOptions } from "react-icons/io";
-import "./Navbar.css"
+import "./css/Navbar.css"
 
-const Navbar = () => {
+interface NavbarProps {
+    onShowFilterChange: (value: boolean) => void;
+}
+const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
     const [loginVisible, setLoginVisible] = useState(false);
     const [registerVisible, setRegisterVisible] = useState(false);
     const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -27,6 +30,12 @@ const Navbar = () => {
     const toggleDropdown = () => {
         setDropdownVisible(!dropdownVisible);
     };
+
+    const handleFilterChange = () => {
+        const showFilter = true;
+        onShowFilterChange(showFilter);
+    };
+
 
     const ismdScreen = useMediaQuery({ query: '(max-width: 1280px)' });
     const isSmScreen = useMediaQuery({ query: '(max-width: 768px)' });
@@ -50,7 +59,7 @@ const Navbar = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
             <nav className="navbar">
-                <div className={`navbar-container ${isSmScreen ? 'hidden' : 'w-full flex md:flex-col justify-between items-center p-4 2xl:mr-4 2xl:p-8 border border-b-gray-500'}`}>
+                <div className={`navbar-container ${isSmScreen ? 'hidden' : 'flex md:flex-col justify-between items-center p-4 2xl:mr-4 2xl:p-8 border border-b-gray-500'}`}>
                     <div className='upper-navbar w-full flex justify-between items-center '>
                         <img src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6' />
                         <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
@@ -78,7 +87,7 @@ const Navbar = () => {
                             <div className='2xl:w-40 2xl:h-14 md:w-36 md:h-12 mr-6 hover:bg-gray-100 cursor-pointer rounded-xl flex items-center content-center justify-center'>
                                 <a className='upper-right-navbar-text text-md xl:text-lg font-semibold text-center'>Airbnb tvoj dom</a>
                             </div>
-                            <div className='relative cursor-pointer flex gap-2 w-24 rounded-2xl hover:border-b-4 justify-center items-center' onClick={toggleDropdown} ref={dropdownRef}>
+                            <div className='relative cursor-pointer flex gap-2 w-24 rounded-2xl hover:shadow-md justify-center items-center' onClick={toggleDropdown} ref={dropdownRef}>
                                 <IoMdMenu className=' 2xl:w-16 2xl:h-16  w-7 h-7' />
                                 <div className='profile-icon relative'>
                                     <CgProfile className='md:w-7 md:h-7 xl:w-9 xl:h-9 2xl:w-14 2xl:h-14 2xl:p-2' />
@@ -133,16 +142,16 @@ const Navbar = () => {
                 
                 <div className={`${isSmScreen? 'small-nav-container flex align-middle justify-center': 'hidden'}`}>
                     <div className='small-navbar w-5/6 flex justify-between items-center p-4  '>
-                        <div className='search flex h-14 flex-grow  items-center rounded-3xl border-2 shadow-lg cursor-pointer hover:border-slate-950 transition-all duration-200 '>
+                        <div className='search flex h-14 flex-grow pl-2  items-center rounded-3xl border-2 shadow-lg cursor-pointer hover:border-slate-950 transition-all duration-200 '>
                             <div className='search-icon'>
                                 <FaSearch className=' h-10 w-10  rounded-3xl p-2' />
                             </div>
-                            <div className='search-bar ml-1 font-semibold text-lg '>
+                            <div className='search-bar pl-2 ml-1 font-semibold text-lg '>
                                 <button>Započnite sa pretraživanjem</button>
                             </div>
                         </div>
                         <div className='filter w-12 h-12 ml-8 p-0.5 rounded-3xl border-2 cursor-pointer hover:border-slate-950 transition-all duration-200 '>
-                            <IoIosOptions className="w-4/5 h-4/5 mt-1 ml-1 text-slate-950 " />
+                            <IoIosOptions onClick={handleFilterChange} className="w-4/5 h-4/5 mt-1 ml-1 text-slate-950 " />
                         </div>
                     </div>
                 </div>

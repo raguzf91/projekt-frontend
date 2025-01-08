@@ -6,6 +6,7 @@ interface SliderProps {
     max: number;
     onChange: (value: { min: number; max: number }) => void;
     currencyText?: string;
+    resetSlider: boolean;
 }
 
 const Slider: React.FC<SliderProps> = ({
@@ -13,6 +14,7 @@ const Slider: React.FC<SliderProps> = ({
     max,
     onChange,
     currencyText = "$",
+    resetSlider = false,
 }) => {
 
    const [minValue, setMinValue] = useState(min); // Initialize with min value
@@ -25,7 +27,24 @@ const Slider: React.FC<SliderProps> = ({
     setMaxValue(max); // Update max value when max prop changes
 }, [min, max]);
 
+useEffect(() => {
+    if(resetSlider) {
+        resetRangeSlider();
+    }
+}, [resetSlider]);
 
+
+
+    const resetRangeSlider = () => {
+        setMinValue(min); // Reset min value to min
+        setMaxValue(max); // Reset max value to max
+        if (sliderRef.current) {
+            sliderRef.current.value = min.toString(); // Reset slider value to min
+        }
+        onChange({ min, max }); // Call onChange with min and max values
+    };
+
+ 
 
    const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value);
@@ -97,7 +116,7 @@ const Slider: React.FC<SliderProps> = ({
     return (
         <div>
             <div>
-                <h3 className='mt-4 mb-2 font-semibold text-slate-600'>Cijena</h3>
+                <h3 className='mt-4 mb-6 font-semibold text-slate-600'>Cijena</h3>
                 <div className='relative '>
                     <input 
                         type="range" 

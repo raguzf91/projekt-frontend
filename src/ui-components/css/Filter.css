@@ -1,0 +1,43 @@
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    appearance: none;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.checkbox-container input[type="checkbox"]:checked {
+    background-color: #1a201a; /* Change this to your desired color */
+    border-color: #1a201a; /* Change this to your desired color */
+}
+
+
+
+/* src/ui-components/css/Filters.css */
+.filter-enter {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  .filter-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms, transform 300ms;
+  }
+  .filter-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .filter-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 300ms, transform 300ms;
+  }
