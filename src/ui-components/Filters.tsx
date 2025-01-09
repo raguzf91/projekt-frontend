@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoMdClose } from 'react-icons/io';
-import { CiCircleMinus, CiCirclePlus } from 'react-icons/ci';
+
 import Slider from './Slider';
 import { FaWifi } from "react-icons/fa";
 import { TbToolsKitchen } from "react-icons/tb";
@@ -19,6 +19,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { IoIosArrowUp } from "react-icons/io";
 import './css/Filter.css';
 import { toast } from 'react-toastify';
+import AddRemove from './AddRemove';
 
 interface FiltersProps {
     onShowFilterChange: (value: boolean) => void;
@@ -193,7 +194,7 @@ const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
 
 
     return (
-        <div className="filter-container flex-col w-full max-w-lg h-5/6 bg-white justify-center items-center z-50 overflow-scroll p-4 mb-0 border-b-0 pb-0 pt-0">
+        <div className="filter-container  flex-col  max-w-lg h-5/6 bg-white justify-center items-center z-50 overflow-scroll p-4 mb-0 border-b-0 pb-0 pt-0">
             <div ref={topRef}></div>
             <div className="header flex mt-2 h-12 border-b-2 sticky top-0 bg-white z-50">
                 <div className="w-10 flex ml-2 p-1.5 items-center justify-center cursor-pointer" onClick={handleFilterChange}>
@@ -249,14 +250,7 @@ const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
                 <h2 className="text-xl h-12 font-bold">Sobe i kreveti</h2>
                 {sobeKreveti.map((item, index) => {
                     return (
-                        <div key={index} className="flex justify-between items-center ml-4 mr-4">
-                            <p className="text-lg font-semibold">{item.item}</p>
-                            <div className="flex gap-4 justify-center items-center">
-                                <CiCircleMinus onClick={() => handleSobeKrevetiMinus(index)} className={`w-8 h-8 cursor-pointer ${item.value === 0 ? 'text-gray-400 cursor-not-allowed' : 'hover:border-2 hover:border-slate-950'}`} />
-                                <p className="text-lg">{item.value}</p>
-                                <CiCirclePlus onClick={() => handleSobeKrevetiAdd(index)} className="w-8 h-8 cursor-pointer hover:border-2 hover:border-slate-950" />
-                            </div>
-                        </div>
+                        <AddRemove key={index} index={index} item={item} handleMinus={handleSobeKrevetiMinus} handleAdd={handleSobeKrevetiAdd} />
                     );
                 })}
             </div>

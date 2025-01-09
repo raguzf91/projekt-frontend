@@ -8,7 +8,19 @@ import Signup from './Signup';
 import { CSSTransition } from 'react-transition-group';
 import { useMediaQuery } from 'react-responsive';
 import { IoIosOptions } from "react-icons/io";
+import svijet from '../assets/images/svijet.jpg';
+import europa from '../assets/images/europa.jpg';
+import azija from '../assets/images/azija.jpg';
+import sjevernaAmerika from '../assets/images/sjeverna-amerika.jpg';
+import juznaAmerika from '../assets/images/juzna-amerika.jpg';
+import afrika from '../assets/images/afrika.jpg';
+import { DatePicker, Space } from "antd";
+import type { DatePickerProps } from 'antd';
+import type { GetProps } from 'antd';
+import AddRemove from './AddRemove';
+import dayjs from 'dayjs';
 import "./css/Navbar.css"
+import {toast} from 'react-toastify';
 
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
@@ -18,6 +30,19 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
     const [registerVisible, setRegisterVisible] = useState(false);
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [searchActive, setSearchActive] = useState(false);
+    const whereFieldRef = useRef<HTMLInputElement>(null);
+    const dolazakFieldRef = useRef<HTMLInputElement>(null);
+    const odlazakFieldRef = useRef<HTMLInputElement>(null);
+    const whoFieldRef = useRef<HTMLInputElement>(null);
+    const [whereActive, setWhereActive] = useState(false);
+    const [whoActive, setWhoActive] = useState(false);
+    const [dolazakActive, setDolazakActive] = useState(false);
+    const [odlazakActive, setOdlazakActive] = useState(false);
+    const [gosti, setGosti] = useState(0);
+    const [regija, setRegija] = useState('');
+    const [dolazak, setDolazak] = useState('');
+    const [odlazak, setOdlazak] = useState('');
 
     const toggleLogin = () => {
         setLoginVisible(!loginVisible);
@@ -36,6 +61,51 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
         onShowFilterChange(showFilter);
     };
 
+    const handleSearchActive = () => {
+        setSearchActive(true);
+        console.log("search active: "+searchActive);
+    };
+
+    const handleWhereActive = () => {
+        setWhereActive(true);
+        console.log("where active: "+whereActive);
+    };
+
+    const handleWhoActive = () => {
+        setWhoActive(true);
+        console.log("who active: "+ whoActive);
+    };
+
+    const handleGostiPlus = (index: number) => {
+        if(gosti > 12) {
+            setGosti(12);
+        } else {
+            setGosti(gosti + 1);
+            console.log("gosti: "+gosti);
+        }
+    };
+
+    const handleWhereChange = (index: number) => {
+        console.log("index: "+index);
+        setRegija(kontinenti[index].text); //TODO: KADA ODABERE DOLAZAK PREBACI NA ODLAZAK I SETDOLAZAK FALSE
+        console.log("regija: "+regija);
+        toast.success('Odabrali ste regiju: '+kontinenti[index].text);
+        setWhereActive(false);
+        
+        
+        
+    };
+
+    const handleGostiMinus = (index: number) => {
+        if (gosti > 0) {
+            setGosti(gosti - 1);
+            console.log("gosti: "+gosti);
+        } else {
+            setGosti(0);
+        }
+    };
+
+    
 
     const ismdScreen = useMediaQuery({ query: '(max-width: 1280px)' });
     const isSmScreen = useMediaQuery({ query: '(max-width: 768px)' });
@@ -53,6 +123,106 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
         };
     }, [dropdownRef]);
 
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (whereFieldRef.current && !whereFieldRef.current.contains(event.target as Node)) {
+                
+                setWhereActive(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [whereFieldRef]);
+
+   
+
+    /*useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (odlazakFieldRef.current && !odlazakFieldRef.current.contains(event.target as Node)) {
+                setSearchActive(false);
+                setOdlazakActive(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [odlazakFieldRef]);*/
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (whoFieldRef.current && !whoFieldRef.current.contains(event.target as Node)) {
+                setWhoActive(false);
+
+            }
+            
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [whoFieldRef]);
+
+    const kontinenti = [
+        {img: svijet, text: 'Fleksibilan sam'},
+        {img: europa, text: 'Europa'},
+        {img: azija, text: 'Azija'},
+        {img: sjevernaAmerika, text: 'Sjeverna Amerika'},
+        {img: juznaAmerika, text: 'Južna Amerika'},
+        {img: afrika, text: 'Afrika'}
+    ]
+
+    const tkoKategorije = [
+        { item: 'Gosti', value: gosti },
+    ]
+    
+    const onDolazakChange: DatePickerProps['onChange'] = (date, dateString) => {
+            if (typeof dateString === 'string') {
+                setDolazak(dateString);
+                toast.success('Odabrali ste dolazak: '+dateString.replace(/-/g, '.'));
+            }
+
+            console.log("dolazakDate: "+date);
+            console.log("dolazakDateString: "+dateString);
+            console.log("dolazak: "+dolazak);
+          };
+
+    const onOdlazakChange: DatePickerProps['onChange'] = (date, dateString) => {
+        if (typeof dateString === 'string') {
+            setOdlazak(dateString);
+            toast.success('Odabrali ste odlazak: '+dateString.replace(/-/g, '.'));
+        }
+        console.log("odlazakDate: "+date);
+        console.log("odlazakDateString: "+dateString);
+    };
+
+    type RangePickerProps = GetProps<typeof DatePicker.RangePicker>;
+
+    const disableDolazak: RangePickerProps['disabledDate'] = (current) => {
+        // Can not select days before today and today
+        return current && current > dayjs(odlazak, "DD-MM-YYYY").endOf('day');
+      };
+
+      const disableOdlazak: RangePickerProps['disabledDate'] = (current) => {
+        // Can not select days before today and today
+        return current && current < dayjs(dolazak, "DD-MM-YYYY").endOf('day');
+      };
+
+    const handleSendSearch = () => {
+        setSearchActive(false);
+        setDolazak("");
+        setOdlazak("");
+        setRegija("");
+        setGosti(0);
+        toast.success('Pretraga poslana!');
+    };
+
     return (
         <section className="relative">
             {(loginVisible || registerVisible) && (
@@ -62,24 +232,92 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
                 <div className={`navbar-container ${isSmScreen ? 'hidden' : 'flex md:flex-col justify-between items-center p-4 2xl:mr-4 2xl:p-8 border border-b-gray-500'}`}>
                     <div className='upper-navbar w-full flex justify-between items-center '>
                         <img src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6' />
-                        <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
-                            <div className='input-field p-2 flex flex-col '>
+                        <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
+                            <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                                 <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
-                                <input type="text" id="default-input-1" placeholder='Potraži destinaciju' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                                <input type="text" id="default-input-1" placeholder={`${regija === '' ? 'Pretraži destinaciju' : regija}`} className="outline-none 2xl:text-md rounded-3xl   border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                                
+                            </div>
+                            <div ref={whereFieldRef} className={`${(whereActive && searchActive) ? 'where-container absolute top-full left-0 bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
+                                    <h2 className='text-lg text-black font-semibold'>Pretraživanje po regijama</h2>
+                                    <div className='grid grid-cols-3'>
+                                        {kontinenti.map((kontinent, index) => {
+                                            return (
+                                                <div key={index} onClick={(e) => { e.stopPropagation(); handleWhereChange(index); }} className='flex flex-col gap-2 items-center hover:bg-gray-200 p-3 rounded-3xl cursor-pointer'>
+                                                    <img  className='w-30 h-28' src={kontinent.img} alt="kontinent" />
+                                                    <p className='text-sm font-semibold'>{kontinent.text}</p>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                            </div>
+                            
+                            <div className="border-l-4 h-8 2xl:h-12"></div>
+                            <div ref={dolazakFieldRef} onClick={() => { handleSearchActive();}} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                                <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Dolazak</label>
+                                <Space   direction="vertical">
+                                      <DatePicker
+                                        defaultValue={null}
+                                        className='dolazak-date'
+                                        variant='borderless'
+                                        placeholder='Odaberi dolazak'
+                                        value={dolazak === '' ? null : dayjs(dolazak, 'DD-MM-YYYY')}
+                                        disabledDate={disableDolazak}
+                                        format={{                                         
+                                          format: 'DD-MM-YYYY',
+                                          type: 'mask',
+                                        }}
+                                        onChange={onDolazakChange}
+                                      />
+                                </Space>
+                            </div>
+                            
+                            <div className="border-l-4 h-8 2xl:h-12"></div>
+                            <div ref={odlazakFieldRef} onClick={handleSearchActive} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2 '>
+                                <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Odlazak</label>
+                                <Space direction="vertical">
+                                      <DatePicker
+                                        variant='borderless'
+                                        placeholder='Odaberi odlazak'
+                                        disabledDate={disableOdlazak}
+                                        format={{                                         
+                                          format: 'DD-MM-YYYY',
+                                          type: 'mask',
+                                        }}
+                                        onChange={onOdlazakChange}
+                                      />
+                                </Space>        
                             </div>
                             <div className="border-l-4 h-8 2xl:h-12"></div>
-                            <div className='input-field p-2  flex flex-col '>
-                                <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Kada</label>
-                                <input type="text" id="default-input-2" placeholder='Dodaj datume' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                            <div  onClick={() => { handleSearchActive(); handleWhoActive(); }} className='input-field  p-2 ml-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                                <label htmlFor="default-input-3" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Tko</label>
+                                <input type="text" id="default-input-3" placeholder={`${gosti === 0 ? 'Unesi broj gostiju' : `Odabrali ste: ${gosti} gosta`}`} className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                             </div>
-                            <div className="border-l-4 h-8 2xl:h-12"></div>
-                            <div className='input-field  p-2 flex flex-col '>
-                                <label htmlFor="default-input-3" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Tko</label>
-                                <input type="text" id="default-input-3" placeholder='Dodaj goste' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
-                            </div>
+                            <div ref={whoFieldRef}  className={`${(whoActive && searchActive) ? 'who-container absolute top-full right-36 bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
+                            
+                                    {tkoKategorije.map((item, index) => {
+                                            return (
+                                                <AddRemove key={index} index={index} item={item} handleMinus={handleGostiMinus} handleAdd={handleGostiPlus} />
+                                            );
+                                        })}
+
+                                </div>
+                           
                             <div className='input-field p-2  flex flex-col'>
-                                <div className='search-icon cursor-pointer'>
-                                    <FaSearch className=' h-10 w-10 2xl:w-12 2xl:h-12 2xl:p-3 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl 2xl:mr-6 transition-colors duration-150' />
+                                <div  className='search-icon cursor-pointer'>
+                                    <FaSearch className={`${searchActive ? 'hidden' : ' h-10 w-10 2xl:w-12 2xl:h-12 2xl:p-3 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl 2xl:mr-6 transition-colors duration-150'} `} />
+                                    <CSSTransition
+                                                in={searchActive}
+                                                timeout={300}
+                                                classNames="fade"
+                                                unmountOnExit
+                                            >
+                                                <div onClick={handleSendSearch} className={`${searchActive ? 'search-icon w-32 h-12 cursor-pointer flex justify-center items-center gap-0 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-600  rounded-3xl ' : 'hidden'}`}>
+                                                    <FaSearch className=' h-8 w-8 p-1.5  text-white bg-inherit  rounded-3xl transition-colors duration-150 ' />
+                                                    <p className='text-md text-white font-semibold pr-2'>Pretraži</p>
+                                                </div>
+                                            </CSSTransition>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -118,21 +356,21 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
                         </div>
                     </div>
                     <div className={`lower-navbar ${ismdScreen ? 'md:w-3/5 mt-4 xl:ml-18 2xl:ml-24 rounded-3xl border  flex justify-between items-center space-x-2' : 'hidden'}`}>
-                        <div className='input-field p-2  flex flex-col w-1/4'>
+                        <div className='input-field p-2   flex flex-col w-1/4 hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
                             <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
                             <input type="text" id="default-input-1" placeholder='Potraži destinaciju' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                         </div>
                         <div className="border-l-4 h-8 2xl:h-12"></div>
-                        <div className='input-field p-2 flex flex-col w-1/4'>
+                        <div className='input-field p-2 flex flex-col w-1/4 hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
                             <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Kada</label>
                             <input type="text" id="default-input-2" placeholder='Dodaj datume' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                         </div>
                         <div className="border-l-4 h-8 2xl:h-12"></div>
-                        <div className='input-field p-2  flex flex-col w-1/4'>
+                        <div className='input-field p-2  flex flex-col w-1/4 hover:bg-gray-200 hover:cursor-pointer '>
                             <label htmlFor="default-input-3" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Tko</label>
                             <input type="text" id="default-input-3" placeholder='Dodaj goste' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                         </div>
-                        <div className='input-field flex flex-col w-12'>
+                        <div className='input-field flex flex-col w-12  '>
                             <div className='search-icon cursor-pointer'>
                                 <FaSearch className='md:w-10 md:h-10 md:mr-3 xl:w-9 xl:h-9 2xl:w-12 2xl:h-12 2xl:p-3 xl:p-2 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl 2xl:mr-6 transition-colors duration-150' />
                             </div>

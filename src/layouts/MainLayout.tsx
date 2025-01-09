@@ -6,7 +6,8 @@ const MainLayout = () =>  {
     return (
         <>  
             <Outlet/>
-            <ToastContainer /> 
+            <ToastContainer
+            /> 
         </>
     )
 }

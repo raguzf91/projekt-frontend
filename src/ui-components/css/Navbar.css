@@ -17,3 +17,20 @@
     transform: scale(0.9);
     transition: opacity 300ms, transform 300ms;
 }
+
+@media(min-width: 768px) {
+    .input-field:hover input {
+        border-color: #000; /* Change the border color when the parent is hovered */
+        --tw-bg-opacity: 1;
+        background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1)) /* #e5e7eb */;
+      }
+
+        .input-field:hover label {
+            cursor: pointer; /* Change the label color when the parent is hovered */
+        }
+    
+}
+.input-field:hover input {
+    --tw-bg-opacity: 1;
+    background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1)) /* #e5e7eb */;
+  }
