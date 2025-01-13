@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import logo from '../assets/images/logo.webp';
+import logo from '../assets/images/logo.png';
 import { FaSearch } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { IoMdMenu } from "react-icons/io";
@@ -14,11 +14,12 @@ import azija from '../assets/images/azija.jpg';
 import sjevernaAmerika from '../assets/images/sjeverna-amerika.jpg';
 import juznaAmerika from '../assets/images/juzna-amerika.jpg';
 import afrika from '../assets/images/afrika.jpg';
-import { DatePicker, Space } from "antd";
+import { DatePicker, Space, Carousel } from "antd";
 import type { DatePickerProps } from 'antd';
 import type { GetProps } from 'antd';
 import AddRemove from './AddRemove';
 import dayjs from 'dayjs';
+import Search from './Search';
 import "./css/Navbar.css"
 import {toast} from 'react-toastify';
 
@@ -31,14 +32,13 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [searchActive, setSearchActive] = useState(false);
+    const [searchVisible, setSearchVisible] = useState(false);
     const whereFieldRef = useRef<HTMLInputElement>(null);
     const dolazakFieldRef = useRef<HTMLInputElement>(null);
     const odlazakFieldRef = useRef<HTMLInputElement>(null);
     const whoFieldRef = useRef<HTMLInputElement>(null);
     const [whereActive, setWhereActive] = useState(false);
     const [whoActive, setWhoActive] = useState(false);
-    const [dolazakActive, setDolazakActive] = useState(false);
-    const [odlazakActive, setOdlazakActive] = useState(false);
     const [gosti, setGosti] = useState(0);
     const [regija, setRegija] = useState('');
     const [dolazak, setDolazak] = useState('');
@@ -54,6 +54,11 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
 
     const toggleDropdown = () => {
         setDropdownVisible(!dropdownVisible);
+    };
+
+    const toggleSearch = () => {
+        setSearchVisible(!searchVisible);
+        console.log("search visible: "+searchVisible);
     };
 
     const handleFilterChange = () => {
@@ -223,15 +228,18 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
         toast.success('Pretraga poslana!');
     };
 
+    const isExtraSmallScreen = useMediaQuery({ query: '(max-width: 486px)' });
+
     return (
         <section className="relative">
             {(loginVisible || registerVisible) && (
+                
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
-            <nav className="navbar">
+            <nav className='navbar'>
                 <div className={`navbar-container ${isSmScreen ? 'hidden' : 'flex md:flex-col justify-between items-center p-4 2xl:mr-4 2xl:p-8 border border-b-gray-500'}`}>
                     <div className='upper-navbar w-full flex justify-between items-center '>
-                        <img src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6' />
+                        <img src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 ' />
                         <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
                             <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                                 <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
@@ -280,6 +288,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
                                         variant='borderless'
                                         placeholder='Odaberi odlazak'
                                         disabledDate={disableOdlazak}
+                                        value={odlazak === '' ? null : dayjs(odlazak, 'DD-MM-YYYY') }
                                         format={{                                         
                                           format: 'DD-MM-YYYY',
                                           type: 'mask',
@@ -301,7 +310,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
                                             );
                                         })}
 
-                                </div>
+                            </div>
                            
                             <div className='input-field p-2  flex flex-col'>
                                 <div  className='search-icon cursor-pointer'>
@@ -355,41 +364,109 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
                             </div>
                         </div>
                     </div>
-                    <div className={`lower-navbar ${ismdScreen ? 'md:w-3/5 mt-4 xl:ml-18 2xl:ml-24 rounded-3xl border  flex justify-between items-center space-x-2' : 'hidden'}`}>
-                        <div className='input-field p-2   flex flex-col w-1/4 hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                    <div className={`lower-navbar ${searchActive ? 'md:w-4/5' : ''} ${ismdScreen ? 'md:w-3/5 mt-4 xl:ml-18 2xl:ml-24 rounded-3xl border  flex justify-between items-center space-x-2' : 'hidden'}`}>
+                        <div onClick={() => { handleSearchActive(); handleWhereActive();}} className='input-field p-2 w-1/5  flex flex-col  hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
                             <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
-                            <input type="text" id="default-input-1" placeholder='Potraži destinaciju' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                            <input type="text" id="default-input-1" placeholder={`${regija === '' ? 'Pretraži destinaciju' : regija}`} className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                         </div>
+                        <div ref={whereFieldRef} className={`${(whereActive && searchActive) ? 'where-container absolute top-full left-0 bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
+                                    <h2 className='text-lg text-black font-semibold'>Pretraživanje po regijama</h2>
+                                    <div className='grid grid-cols-3'>
+                                        {kontinenti.map((kontinent, index) => {
+                                            return (
+                                                <div key={index} onClick={(e) => { e.stopPropagation(); handleWhereChange(index); }} className='flex flex-col gap-2 items-center hover:bg-gray-200 p-3 rounded-3xl cursor-pointer'>
+                                                    <img  className='w-30 h-28' src={kontinent.img} alt="kontinent" />
+                                                    <p className='text-sm font-semibold'>{kontinent.text}</p>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                            </div>
                         <div className="border-l-4 h-8 2xl:h-12"></div>
-                        <div className='input-field p-2 flex flex-col w-1/4 hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
-                            <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Kada</label>
-                            <input type="text" id="default-input-2" placeholder='Dodaj datume' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        <div ref={dolazakFieldRef} onClick={() => { handleSearchActive();}} className='input-field w-1/5 p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                                <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Dolazak</label>
+                                <Space   direction="vertical">
+                                      <DatePicker
+                                        defaultValue={null}
+                                        className='dolazak-date'
+                                        variant='borderless'
+                                        placeholder='Odaberi dolazak'
+                                        value={dolazak === '' ? null : dayjs(dolazak, 'DD-MM-YYYY')}
+                                        disabledDate={disableDolazak}
+                                        format={{                                         
+                                          format: 'DD-MM-YYYY',
+                                          type: 'mask',
+                                        }}
+                                        onChange={onDolazakChange}
+                                      />
+                                </Space>
                         </div>
+                        <div ref={odlazakFieldRef} onClick={handleSearchActive} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2 '>
+                                <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Odlazak</label>
+                                <Space direction="vertical">
+                                      <DatePicker
+                                        variant='borderless'
+                                        placeholder='Odaberi odlazak'
+                                        disabledDate={disableOdlazak}
+                                        value={odlazak === '' ? null : dayjs(odlazak, 'DD-MM-YYYY')}
+                                        format={{                                         
+                                          format: 'DD-MM-YYYY',
+                                          type: 'mask',
+                                        }}
+                                        onChange={onOdlazakChange}
+                                      />
+                                </Space>        
+                            </div>
                         <div className="border-l-4 h-8 2xl:h-12"></div>
-                        <div className='input-field p-2  flex flex-col w-1/4 hover:bg-gray-200 hover:cursor-pointer '>
-                            <label htmlFor="default-input-3" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white">Tko</label>
-                            <input type="text" id="default-input-3" placeholder='Dodaj goste' className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
-                        </div>
-                        <div className='input-field flex flex-col w-12  '>
-                            <div className='search-icon cursor-pointer'>
+                        <div  onClick={() => { handleSearchActive(); handleWhoActive(); }} className='input-field w-1/4  p-2 ml-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                                <label htmlFor="default-input-3" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Tko</label>
+                                <input type="text" id="default-input-3" placeholder={`${gosti === 0 ? 'Unesi broj gostiju' : `Odabrali ste: ${gosti} gosta`}`} className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                            </div>
+                            <div ref={whoFieldRef}  className={`${(whoActive && searchActive) ? 'who-container absolute top-full right-36 bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
+                            
+                                    {tkoKategorije.map((item, index) => {
+                                            return (
+                                                <AddRemove key={index} index={index} item={item} handleMinus={handleGostiMinus} handleAdd={handleGostiPlus} />
+                                            );
+                                        })}
+
+                                </div>
+                           
+                        <div className=' input-field flex flex-col w-1/6'>
+                            <div className={`${searchActive ? 'hidden' : 'search-icon cursor-pointer'} `}>
                                 <FaSearch className='md:w-10 md:h-10 md:mr-3 xl:w-9 xl:h-9 2xl:w-12 2xl:h-12 2xl:p-3 xl:p-2 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl 2xl:mr-6 transition-colors duration-150' />
                             </div>
+                            <div  className='search-icon cursor-pointer w-full'>
+                                <CSSTransition
+                                            in={searchActive}
+                                            timeout={300}
+                                            classNames="fade"
+                                            unmountOnExit
+                                        >
+                                            <div onClick={handleSendSearch} className={`${searchActive ? 'search-icon w-28 h-12 cursor-pointer flex justify-center items-center gap-0 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-600  rounded-3xl ' : 'hidden'}`}>
+                                                <FaSearch className=' h-8 w-8 p-1.5  text-white bg-inherit  rounded-3xl transition-colors duration-150 ' />
+                                                <p className='text-md text-white font-semibold pr-2'>Pretraži</p>
+                                            </div>
+                                        </CSSTransition>
+                                
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
                 
-                <div className={`${isSmScreen? 'small-nav-container flex align-middle justify-center': 'hidden'}`}>
+                <div className={`${searchVisible ? 'hidden' : ''} ${isSmScreen? 'small-nav-container flex align-middle justify-center': 'hidden'}`}>
                     <div className='small-navbar w-5/6 flex justify-between items-center p-4  '>
-                        <div className='search flex h-14 flex-grow pl-2  items-center rounded-3xl border-2 shadow-lg cursor-pointer hover:border-slate-950 transition-all duration-200 '>
-                            <div className='search-icon'>
-                                <FaSearch className=' h-10 w-10  rounded-3xl p-2' />
+                        <div onClick={toggleSearch} className='search flex h-14 flex-grow pl-2  items-center rounded-3xl border-2 shadow-lg cursor-pointer hover:border-slate-950 transition-all duration-200 '>
+                            <div className='search-icon w-10 h-10 flex justify-center items-center bg-red-500 hover:bg-red-600 rounded-3xl p-2'>
+                                <FaSearch className={`${isExtraSmallScreen ? 'h-4 w-4 p-0.5' : ''} h-6 w-6 text-white rounded-3xl p-1`} />
                             </div>
-                            <div className='search-bar pl-2 ml-1 font-semibold text-lg '>
-                                <button>Započnite sa pretraživanjem</button>
+                            <div  className='search-bar pl-2 ml-1 font-semibold text-lg '>
+                                <button className={`${isExtraSmallScreen ? 'text-sm' : ''}`}>Započnite sa pretraživanjem</button>
                             </div>
                         </div>
-                        <div className='filter w-12 h-12 ml-8 p-0.5 rounded-3xl border-2 cursor-pointer hover:border-slate-950 transition-all duration-200 '>
-                            <IoIosOptions onClick={handleFilterChange} className="w-4/5 h-4/5 mt-1 ml-1 text-slate-950 " />
+                        <div className={`${isExtraSmallScreen ? 'w-10 h-8 p-1' : 'w-12 h-12'}filter flex justify-center items-center ml-8 p-2 rounded-full border-2 cursor-pointer hover:border-slate-950 transition-all duration-200 hover:shadow-xl`}>
+                            <IoIosOptions onClick={handleFilterChange} className={`${isExtraSmallScreen ? 'w-6 h-6 mt-0 ml-0' : 'w-full h-full  '}   text-slate-950 `} />
                         </div>
                     </div>
                 </div>
@@ -410,6 +487,14 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
                 unmountOnExit
             >
                 <Signup toggleRegister={toggleRegister} />
+            </CSSTransition>
+            <CSSTransition
+                in={searchVisible}
+                timeout={300}
+                classNames="fade"
+                unmountOnExit
+            >
+                <Search  toggleSearchContainer={toggleSearch} />
             </CSSTransition>
         </section>
     );

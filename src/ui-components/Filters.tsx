@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoMdClose } from 'react-icons/io';
-
 import Slider from './Slider';
 import { FaWifi } from "react-icons/fa";
 import { TbToolsKitchen } from "react-icons/tb";
