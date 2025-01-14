@@ -25,8 +25,9 @@ import {toast} from 'react-toastify';
 
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
+    setBrojNocenja: (value: number) => void;
 }
-const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
+const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) => {
     const [loginVisible, setLoginVisible] = useState(false);
     const [registerVisible, setRegisterVisible] = useState(false);
     const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -229,6 +230,18 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange}) => {
     };
 
     const isExtraSmallScreen = useMediaQuery({ query: '(max-width: 486px)' });
+    const calculateBrojNocenja = () => {
+        const dolazakDate = dayjs(dolazak, 'DD-MM-YYYY');
+        const odlazakDate = dayjs(odlazak, 'DD-MM-YYYY');
+        const brojNocenja = odlazakDate.diff(dolazakDate, 'day');
+        console.log("broj nocenja: "+brojNocenja);
+        
+        return brojNocenja;
+
+    };
+
+    const brojNocenja = calculateBrojNocenja();
+    setBrojNocenja(brojNocenja);
 
     return (
         <section className="relative">

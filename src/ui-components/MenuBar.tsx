@@ -83,7 +83,7 @@ const MenuBar: React.FC<MenuBarProps> = ({onShowFilterChange}) => {
                 <div
                     key={option.id}
                     onClick={() => handleClick(index)}
-                    className={`option flex-row cursor-pointer ml-4  transition-all duration-200 hover:border-b-4 ${clickedIndex === index ? 'border-b-4 border-b-gray-700' : 'border-b-gray-200 hover:text-red-500'}`}
+                    className={`option flex-row cursor-pointer ml-4  transition-all duration-200 hover:shadow-lg ${clickedIndex === index ? 'border-b-4 border-b-gray-700' : 'border-b-gray-200 hover:text-red-500'}`}
                 >
                      {option.icon && React.cloneElement(option.icon, { className: `w-20 h-10 xl:w-14 xl:h-8` })}
                     <p className={`text-center text-sm font-semibold pb-1   transition-all duration-200 ${clickedIndex === index ? 'whitespace-normal break-words ' : 'whitespace-nowrap overflow-hidden'}`}>

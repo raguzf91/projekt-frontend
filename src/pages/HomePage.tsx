@@ -6,16 +6,20 @@ import { CSSTransition } from 'react-transition-group';
 import '../ui-components/css/Filter.css'; // Import the CSS for CSSTransition animations
 import Navbar from "../ui-components/Navbar";
 import Hero from "../ui-components/Hero";
+
 const HomePage = () => {
     const [showFilter, setShowFilter] = useState(false);
+    const [brojNocenja, setBrojNocenja] = useState<number>(1);
 
     const handleShowFilterChange = (value: boolean) => {
         setShowFilter(value);
     };
 
+    
+
     return (
         <>
-        <Navbar onShowFilterChange={handleShowFilterChange} />
+        <Navbar onShowFilterChange={handleShowFilterChange} setBrojNocenja={setBrojNocenja} />
         <main className="home-page relative">
             {showFilter && <div className="fixed inset-0 bg-black opacity-50"></div>}
             <MenuBar onShowFilterChange={handleShowFilterChange} />
@@ -30,8 +34,7 @@ const HomePage = () => {
                     <Filters onShowFilterChange={handleShowFilterChange} />
                 </div>
             </CSSTransition>
-            <Hero />
-            
+            <Hero brojNocenja={brojNocenja} />
         </main>
         </>
         
