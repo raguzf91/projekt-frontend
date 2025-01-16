@@ -40,3 +40,8 @@
     color: transparent; /* Change this to your desired hover color */
     background-color: lightgray; /* Change this to your desired hover background color */
 }
+
+.ant-carousel .slick-slider .slick-list .slick-track::before {
+    width: 100%;
+    height: 100%;
+}

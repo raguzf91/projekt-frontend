@@ -1,22 +1,54 @@
 import { Carousel, ConfigProvider } from "antd";
 import React from "react";
 import './css/HeroBox.css';
+import { IoMdStar } from "react-icons/io";
+import { FaHouseUser } from "react-icons/fa";
+
+
+interface Location {
+    city: string;
+    country: string;
+    address: string;
+    zipcode: string;
+    latitude: number;
+    longitude: number;
+}
+
+interface User {
+    id: number;
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    birthDate: string;
+    responseRate: number;
+    speaksLanguages: string[];
+    profilePhoto: string;
+}
+
+interface Photo {
+    photoUrl: string;
+}
 
 interface HeroBoxProps {
-    content: {
-        image: string[];
+    listing: {
+        photos: Photo[];
         title: string;
-        location: string;
-        owner: string;
+        location: Location;
+        user: User;
         price: number;
         rating: number;
         description: string;
+        reviews: string[];
+        category: string;
     };
     brojNocenja: number;
+    menuCategory: string;
     onClick: () => void;
 }
 
-const HeroBox: React.FC<HeroBoxProps> = ({ content, brojNocenja, onClick }) => {
+const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, menuCategory, onClick }) => {
 
     
     
@@ -26,7 +58,7 @@ const HeroBox: React.FC<HeroBoxProps> = ({ content, brojNocenja, onClick }) => {
     };
 
     return (
-        <div className="flex flex-col  w-72 bg-inherit text-inherit h-fit pb-16 gap-2 rounded-3xl shadow-lg hover:shadow-2xl cursor-pointer ">
+        <div className={`${(menuCategory === listing.category || menuCategory === 'Sve') ? "flex flex-col  w-72 bg-inherit text-inherit h-fit pb-16 gap-2 rounded-3xl shadow-lg hover:shadow-2xl cursor-pointer" : 'hidden'}`}>
             <ConfigProvider
                 theme={{
                     components: {
@@ -46,22 +78,30 @@ const HeroBox: React.FC<HeroBoxProps> = ({ content, brojNocenja, onClick }) => {
                     arrows={true}
                     infinite={false}
                     pauseOnHover={true}
-                    className="rounded-s-3xl w-full h-full"
+                    className="rounded-s-3xl w-full h-3/4"
                 >
-                    {content.image.map((image, imgIndex) => (
+                    {listing.photos.map((photo, imgIndex) => (
                         <div className="w-full h-full flex items-center justify-center" key={imgIndex}>
-                            <img src={image} alt={content.title} className="w-full h-full rounded-3xl" />
+                            <img src={`${photo.photoUrl}`} alt={listing.title} className="w-72 h-72 rounded-3xl" />
                         </div>
                     ))}
                 </Carousel>
             </ConfigProvider>
             <div className="flex flex-col pl-2 gap-2">
-                <h2 className="text-xl font-bold">{content.title}</h2>
-                <p className="text-sm font-semibold">{content.location}</p>
-                <p className="text-sm font-semibold">{`Domaćin je ${content.owner}`}</p>
+                <div className="flex justify-between items-center ">
+                <h2 className="text-xl font-bold">{listing.title}</h2>
+                    <div className="flex gap-1 items-center">
+                        {<IoMdStar />}
+                        <p className="text-sm font-semibold pr-4">{listing.rating}</p>
+                    </div>
+                    
+                </div>
+                
+                <p className="text-sm font-bold mt-6">{`${listing.location.city}, ${listing.location.country}`}</p>
+                <p className="text-sm font-bold">{`Domaćin je ${listing.user.firstName}`}</p>
                 <div className="flex gap-2">
-                    <p className="text-sm font-bold">{`€${content.price} noćenje · `}</p>
-                    <p className="text-sm text-gray-700 underline underline-offset-2">{`Ukupno €${content.price * (isNaN(brojNocenja) ? 1 : brojNocenja)}`}</p>
+                    <p className="text-sm font-bold">{`€${listing.price} noćenje · `}</p>
+                    <p className="text-sm text-gray-700 underline underline-offset-2">{`Ukupno €${listing.price * (isNaN(brojNocenja) ? 1 : brojNocenja)}`}</p>
                 </div>
             </div>
         </div>

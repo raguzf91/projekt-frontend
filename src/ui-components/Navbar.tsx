@@ -230,18 +230,23 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     };
 
     const isExtraSmallScreen = useMediaQuery({ query: '(max-width: 486px)' });
-    const calculateBrojNocenja = () => {
-        const dolazakDate = dayjs(dolazak, 'DD-MM-YYYY');
-        const odlazakDate = dayjs(odlazak, 'DD-MM-YYYY');
-        const brojNocenja = odlazakDate.diff(dolazakDate, 'day');
-        console.log("broj nocenja: "+brojNocenja);
-        
-        return brojNocenja;
 
-    };
 
-    const brojNocenja = calculateBrojNocenja();
-    setBrojNocenja(brojNocenja);
+    useEffect(() => {
+        const calculateBrojNocenja = () => {
+            const dolazakDate = dayjs(dolazak, 'DD-MM-YYYY');
+            const odlazakDate = dayjs(odlazak, 'DD-MM-YYYY');
+            const brojNocenja = odlazakDate.diff(dolazakDate, 'day');
+            console.log("broj nocenja: "+brojNocenja);
+            
+            return brojNocenja;
+    
+        };
+        const brojNocenja = calculateBrojNocenja();
+        setBrojNocenja(brojNocenja);
+    }, [dolazak, odlazak, setBrojNocenja]);
+
+
 
     return (
         <section className="relative">

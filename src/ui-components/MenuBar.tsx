@@ -1,5 +1,5 @@
 import { GiWoodCabin } from "react-icons/gi";
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GiIsland } from "react-icons/gi";
 import { FaSwimmingPool } from "react-icons/fa";
 import { PiFarmFill } from "react-icons/pi";
@@ -15,14 +15,16 @@ import { LuFlame } from "react-icons/lu";
 import { IoIosArrowDropright } from "react-icons/io";
 import { IoIosArrowDropleft } from "react-icons/io";
 import { useMediaQuery } from 'react-responsive';
+import { FaHouseUser } from "react-icons/fa";
 import "./css/MenuBar.css";
 
 
 interface MenuBarProps {
     onShowFilterChange: (value: boolean) => void;
+    onFilterChange: (value: string) => void;
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({onShowFilterChange}) => {
+const MenuBar: React.FC<MenuBarProps> = ({onShowFilterChange, onFilterChange}) => {
 
     const isSmScreen = useMediaQuery({ query: '(max-width: 768px)' });
 
@@ -46,7 +48,10 @@ const MenuBar: React.FC<MenuBarProps> = ({onShowFilterChange}) => {
     
     const handleClick = (index: number) => {
         setClickedIndex(index);
+        onFilterChange(options[index].label);
     }
+
+   
 
     const handleFilterChange = () => {
         const showFilter = true;
@@ -54,6 +59,7 @@ const MenuBar: React.FC<MenuBarProps> = ({onShowFilterChange}) => {
     };
 
     const options = [
+        { id: 12, label: 'Sve', icon: <FaHouseUser className="" /> },
         { id: 0, label: 'Kabina', icon: <GiWoodCabin className="" /> },
         { id: 1, label: 'Otoci', icon: <GiIsland /> },
         { id: 2, label: 'Izvanredni bazeni', icon: <FaSwimmingPool /> },
@@ -69,6 +75,7 @@ const MenuBar: React.FC<MenuBarProps> = ({onShowFilterChange}) => {
 
     ];
 
+    
     return (
         <section className="menubar-section w-full flex justify-center  2xl:gap-8  2xl:mt-4 xl:mt-4">
             <div ref={containerRef} className="menubar-container overflow-x-auto flex 2xl:gap-4 xl:gap-2 m-4 ">

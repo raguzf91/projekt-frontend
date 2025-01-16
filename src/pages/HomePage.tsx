@@ -10,10 +10,13 @@ import Hero from "../ui-components/Hero";
 const HomePage = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [brojNocenja, setBrojNocenja] = useState<number>(1);
-
+    const [currentMenuFilter, setCurrentMenuFilter] = useState<string>('Sve');
     const handleShowFilterChange = (value: boolean) => {
         setShowFilter(value);
     };
+    const handleMenuFilterChange = (value : string) => {
+        setCurrentMenuFilter(value);
+    }
 
     
 
@@ -22,7 +25,7 @@ const HomePage = () => {
         <Navbar onShowFilterChange={handleShowFilterChange} setBrojNocenja={setBrojNocenja} />
         <main className="home-page relative">
             {showFilter && <div className="fixed inset-0 bg-black opacity-50"></div>}
-            <MenuBar onShowFilterChange={handleShowFilterChange} />
+            <MenuBar onShowFilterChange={handleShowFilterChange} onFilterChange={handleMenuFilterChange} />
             <CSSTransition
                 in={showFilter}
                 timeout={300}
@@ -34,7 +37,7 @@ const HomePage = () => {
                     <Filters onShowFilterChange={handleShowFilterChange} />
                 </div>
             </CSSTransition>
-            <Hero brojNocenja={brojNocenja} />
+            <Hero brojNocenja={brojNocenja} menuFilter={currentMenuFilter} />
         </main>
         </>
         
