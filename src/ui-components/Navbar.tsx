@@ -22,12 +22,14 @@ import dayjs from 'dayjs';
 import Search from './Search';
 import "./css/Navbar.css"
 import {toast} from 'react-toastify';
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
     setBrojNocenja: (value: number) => void;
+    handleListingFilterChange: (regija: string, dolazak: string, odlazak: string, gosti: number) => void;
 }
-const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) => {
+const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, handleListingFilterChange}) => {
     const [loginVisible, setLoginVisible] = useState(false);
     const [registerVisible, setRegisterVisible] = useState(false);
     const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -42,8 +44,12 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const [whoActive, setWhoActive] = useState(false);
     const [gosti, setGosti] = useState(0);
     const [regija, setRegija] = useState('');
-    const [dolazak, setDolazak] = useState('');
-    const [odlazak, setOdlazak] = useState('');
+    const currentDate = dayjs(); // Get the current date
+    const nextDay = currentDate.add(1, 'day'); // Get the day after the current date
+    const [dolazak, setDolazak] = useState(currentDate.format('DD-MM-YYYY'));
+    const [odlazak, setOdlazak] = useState(nextDay.format('DD-MM-YYYY'));
+    const [searchParams, setSearchParams] = useSearchParams();
+    
 
     const toggleLogin = () => {
         setLoginVisible(!loginVisible);
@@ -73,13 +79,12 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     };
 
     const handleWhereActive = () => {
-        setWhereActive(true);
-        console.log("where active: "+whereActive);
+        setWhereActive(!whereActive);
+        
     };
 
     const handleWhoActive = () => {
-        setWhoActive(true);
-        console.log("who active: "+ whoActive);
+        setWhoActive(!whoActive);
     };
 
     const handleGostiPlus = (index: number) => {
@@ -92,13 +97,11 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     };
 
     const handleWhereChange = (index: number) => {
-        console.log("index: "+index);
+        console.log("where active: "+whereActive);
         setRegija(kontinenti[index].text); //TODO: KADA ODABERE DOLAZAK PREBACI NA ODLAZAK I SETDOLAZAK FALSE
         console.log("regija: "+regija);
         toast.success('Odabrali ste regiju: '+kontinenti[index].text);
         setWhereActive(false);
-        
-        
         
     };
 
@@ -130,19 +133,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     }, [dropdownRef]);
 
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (whereFieldRef.current && !whereFieldRef.current.contains(event.target as Node)) {
-                
-                setWhereActive(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [whereFieldRef]);
+    
 
    
 
@@ -160,20 +151,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
         };
     }, [odlazakFieldRef]);*/
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (whoFieldRef.current && !whoFieldRef.current.contains(event.target as Node)) {
-                setWhoActive(false);
 
-            }
-            
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [whoFieldRef]);
 
     const kontinenti = [
         {img: svijet, text: 'Fleksibilan sam'},
@@ -222,10 +200,9 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
 
     const handleSendSearch = () => {
         setSearchActive(false);
-        setDolazak("");
-        setOdlazak("");
-        setRegija("");
-        setGosti(0);
+        setWhereActive(false);
+        setWhoActive(false);
+        handleListingFilterChange(regija, dolazak, odlazak, gosti);
         toast.success('Pretraga poslana!');
     };
 
@@ -246,6 +223,27 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
         setBrojNocenja(brojNocenja);
     }, [dolazak, odlazak, setBrojNocenja]);
 
+    const navigate = useNavigate();
+    const handleNavigateToHome = () => {
+        navigate("/");
+    };
+
+    useEffect(() => {
+        const calculateBrojNocenja = () => {
+            const dolazakDate = dayjs(dolazak, 'DD-MM-YYYY');
+            const odlazakDate = dayjs(odlazak, 'DD-MM-YYYY');
+            const brojNocenja = odlazakDate.diff(dolazakDate, 'day');
+            console.log("broj nocenja: "+brojNocenja);
+            
+            return brojNocenja;
+    
+        };
+        const brojNocenja = calculateBrojNocenja();
+        setBrojNocenja(brojNocenja);
+    }, [dolazak, odlazak, setBrojNocenja]);
+     
+    
+
 
 
     return (
@@ -257,7 +255,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
             <nav className='navbar'>
                 <div className={`navbar-container ${isSmScreen ? 'hidden' : 'flex md:flex-col justify-between items-center p-4 2xl:mr-4 2xl:p-8 border border-b-gray-500'}`}>
                     <div className='upper-navbar w-full flex justify-between items-center '>
-                        <img src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 ' />
+                        <img onClick={handleNavigateToHome} src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer ' />
                         <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
                             <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                                 <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
@@ -269,7 +267,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                     <div className='grid grid-cols-3'>
                                         {kontinenti.map((kontinent, index) => {
                                             return (
-                                                <div key={index} onClick={(e) => { e.stopPropagation(); handleWhereChange(index); }} className='flex flex-col gap-2 items-center hover:bg-gray-200 p-3 rounded-3xl cursor-pointer'>
+                                                <div key={index} onClick={(e) => { e.stopPropagation(); handleWhereChange(index); }} className='flex flex-col gap-2 items-center hover:bg-gray-200 p-3 rounded-3xl cursor-pointer z-50'>
                                                     <img  className='w-30 h-28' src={kontinent.img} alt="kontinent" />
                                                     <p className='text-sm font-semibold'>{kontinent.text}</p>
                                                 </div>
@@ -283,7 +281,8 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                 <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Dolazak</label>
                                 <Space   direction="vertical">
                                       <DatePicker
-                                        defaultValue={null}
+                                        onClick={() => { setWhoActive(false); setWhereActive(false); }}
+                                        defaultValue={currentDate}
                                         className='dolazak-date'
                                         variant='borderless'
                                         placeholder='Odaberi dolazak'
@@ -303,6 +302,8 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                 <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Odlazak</label>
                                 <Space direction="vertical">
                                       <DatePicker
+                                        onClick={() => { setWhoActive(false); setWhereActive(false); }}
+                                        defaultValue={nextDay}
                                         variant='borderless'
                                         placeholder='Odaberi odlazak'
                                         disabledDate={disableOdlazak}

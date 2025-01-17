@@ -1,28 +1,37 @@
 import MenuBar from "../ui-components/MenuBar";
-import FooterMenu from "../ui-components/FooterMenu";
 import Filters from "../ui-components/Filters";
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import '../ui-components/css/Filter.css'; // Import the CSS for CSSTransition animations
-import Navbar from "../ui-components/Navbar";
 import Hero from "../ui-components/Hero";
+import { useNavbarFilter } from '../context/NavbarFilterContext';
+import { useSearchParams } from "react-router-dom";
 
-const HomePage = () => {
+
+const HomePage  = () => {
     const [showFilter, setShowFilter] = useState(false);
-    const [brojNocenja, setBrojNocenja] = useState<number>(1);
     const [currentMenuFilter, setCurrentMenuFilter] = useState<string>('Sve');
+    const { brojNocenja, dolazak, odlazak, gosti, regija } = useNavbarFilter();
     const handleShowFilterChange = (value: boolean) => {
         setShowFilter(value);
     };
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+     
     const handleMenuFilterChange = (value : string) => {
         setCurrentMenuFilter(value);
+
     }
+
+    useEffect(() => {
+        setSearchParams({ category: currentMenuFilter, regija: regija, brojNocenja: brojNocenja.toString(), dolazak: dolazak, odlazak: odlazak, gosti: gosti.toString() });
+    }, [currentMenuFilter, brojNocenja, setSearchParams, dolazak, odlazak, gosti, regija]);
 
     
 
     return (
         <>
-        <Navbar onShowFilterChange={handleShowFilterChange} setBrojNocenja={setBrojNocenja} />
         <main className="home-page relative">
             {showFilter && <div className="fixed inset-0 bg-black opacity-50"></div>}
             <MenuBar onShowFilterChange={handleShowFilterChange} onFilterChange={handleMenuFilterChange} />

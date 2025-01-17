@@ -3,7 +3,7 @@ import React from "react";
 import './css/HeroBox.css';
 import { IoMdStar } from "react-icons/io";
 import { FaHouseUser } from "react-icons/fa";
-
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface Location {
     city: string;
@@ -33,6 +33,7 @@ interface Photo {
 
 interface HeroBoxProps {
     listing: {
+        id: number;
         photos: Photo[];
         title: string;
         location: Location;
@@ -44,13 +45,18 @@ interface HeroBoxProps {
         category: string;
     };
     brojNocenja: number;
-    menuCategory: string;
-    onClick: () => void;
 }
 
-const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, menuCategory, onClick }) => {
+const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja}) => {
 
-    
+    const navigate = useNavigate();
+
+    const handleNavigateToListing = (id: number) => {
+            console.log("navigating");
+            navigate(`/listing/${id}`, {state: {listing, brojNocenja}});
+        };
+
+
     
     const onChange = (currentSlide: number) => {
         console.log(currentSlide);
@@ -58,7 +64,7 @@ const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, menuCategory, o
     };
 
     return (
-        <div className={`${(menuCategory === listing.category || menuCategory === 'Sve') ? "flex flex-col  w-72 bg-inherit text-inherit h-fit pb-16 gap-2 rounded-3xl shadow-lg hover:shadow-2xl cursor-pointer" : 'hidden'}`}>
+        <div  className={"flex flex-col  w-72 bg-inherit text-inherit h-fit pb-16 gap-2 rounded-3xl shadow-lg hover:shadow-2xl cursor-pointer" }>
             <ConfigProvider
                 theme={{
                     components: {
@@ -87,7 +93,7 @@ const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, menuCategory, o
                     ))}
                 </Carousel>
             </ConfigProvider>
-            <div className="flex flex-col pl-2 gap-2">
+            <div onClick={() => handleNavigateToListing(listing.id)} className="flex flex-col pl-2 gap-2">
                 <div className="flex justify-between items-center ">
                 <h2 className="text-xl font-bold">{listing.title}</h2>
                     <div className="flex gap-1 items-center">
