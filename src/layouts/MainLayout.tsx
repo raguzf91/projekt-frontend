@@ -1,36 +1,38 @@
-import { useState } from "react";
+import React from "react";
 import Navbar from "../ui-components/Navbar";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import NavbarFilterContext from '../context/NavbarFilterContext';
-const MainLayout = () =>  {
-    const [showFilter, setShowFilter] = useState(false);
-    const [brojNocenja, setBrojNocenja] = useState<number>(1);
-    const [regija, setRegija] = useState<string>('');
-    const [dolazak, setDolazak] = useState<string>('');
-    const [odlazak, setOdlazak] = useState<string>('');
-    const [gosti, setGosti] = useState<number>(1);
-    
-    const handleShowFilterChange = (value: boolean) => {
-        setShowFilter(value);
-    };
+import Filters from "../ui-components/Filters";
+import { CSSTransition } from 'react-transition-group';
+import { SearchParamsProvider } from '../context/SearchParamsContext';
+import { useNavbarFilter } from '../context/NavbarFilterProvider';
 
-    const handleListingFilterChange = (regija: string, dolazak: string, odlazak: string, gosti: number) => {
-        setRegija(regija);
-        setDolazak(dolazak);
-        setOdlazak(odlazak);
-        setGosti(gosti);
-    };
-   
+const MainLayout = () => {
+    const { setBrojNocenja, handleShowSmallScFilter, brojNocenja, regija, dolazak, odlazak, gosti, showFilterSmallSc, setShowFilterSmallSc, location, period, handleListingFilterChange } = useNavbarFilter();
 
     return (
-        <>  
-        <NavbarFilterContext.Provider value={{ brojNocenja, setBrojNocenja, handleListingFilterChange, regija, dolazak, odlazak, gosti }}>
-            <Navbar onShowFilterChange={handleShowFilterChange} setBrojNocenja={setBrojNocenja} handleListingFilterChange={handleListingFilterChange} />
+        <SearchParamsProvider>
+            <CSSTransition
+                in={showFilterSmallSc}
+                timeout={300}
+                classNames="filter"
+                unmountOnExit
+            >
+                <div className="fixed inset-0 flex items-center justify-center z-40 ">
+                    <div className="absolute inset-0 bg-black opacity-50"></div>
+                    <Filters onShowFilterChange={handleShowSmallScFilter} />
+                </div>
+            </CSSTransition>
+
+            <Navbar
+                onShowFilterChange={handleShowSmallScFilter}
+                setBrojNocenja={setBrojNocenja}
+                numberOfGuests={gosti}
+            />
             <Outlet />
             <ToastContainer />
-        </NavbarFilterContext.Provider>
-        </>
-    )
-}
+        </SearchParamsProvider>
+    );
+};
+
 export default MainLayout;

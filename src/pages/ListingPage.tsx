@@ -1,9 +1,16 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import { useParams } from 'react-router-dom';
 import Spinner from '../ui-components/Spinner';
-import logo from "../assets/images/logo.png";
-const ListingPage = () => {
+import { useSearchParamsContext } from '../context/SearchParamsContext';
+import { useNavbarFilter } from '../context/NavbarFilterProvider';
 
+interface ListingPageProps {
+    location: string;
+    period: string;
+    numberOfGuests: number;
+}
+
+const ListingPage: React.FC<ListingPageProps> = () => {
     const { id } = useParams();
 
     interface Location {
@@ -14,7 +21,7 @@ const ListingPage = () => {
         latitude: number;
         longitude: number;
     }
-    
+
     interface User {
         id: number;
         email: string;
@@ -27,11 +34,11 @@ const ListingPage = () => {
         speaksLanguages: string[];
         profilePhoto: string;
     }
-    
+
     interface Photo {
         photoUrl: string;
     }
-    
+
     interface Listing {
         id: number;
         photos: Photo[];
@@ -47,14 +54,23 @@ const ListingPage = () => {
 
     const [listing, setListing] = useState<Listing | null>(null);
     const [loading, setLoading] = useState(true);
+    const { searchParams, setSearchParams } = useSearchParamsContext();
+    const { dolazak, odlazak, gosti, handleListingFilterChange } = useNavbarFilter();
+    const handleListingFilterChangeCalled = useRef(false);
 
     useEffect(() => {
         const fetchListing = async () => {
             try {
                 const response = await fetch(`http://localhost:8080/api/listing/${id}`);
                 const data = await response.json();
-                const { listing } = data.data; // Extract listing from data
-                setListing(listing);
+                const { listingData } = data.data; // Extract listing from data
+                console.log("Listing data: ", listingData);
+                setListing(listingData);
+                if (listingData && !handleListingFilterChangeCalled.current) {
+                    console.log("doslovno samo jednom treba da se pozove");
+                    handleListingFilterChange(`${listingData.location.city}, ${listingData.location.country}`, dolazak, odlazak, gosti);
+                    handleListingFilterChangeCalled.current = true;
+                }
             } catch (error) {
                 console.error(error);
             } finally {
@@ -63,16 +79,22 @@ const ListingPage = () => {
         };
 
         fetchListing();
-    }, [id]);
+    }, [id, dolazak, odlazak, gosti, handleListingFilterChange]);
+
+
+
+
+   
 
     return (
-                <section className='listing-section'>
-                      {loading ? (<Spinner loading={loading} />) : (
-                    <header className='flex items-start p-6'>
-                       {listing?.title}
-                    </header>
-                    )}
-                </section>
+        <section className='listing-section'>
+            {loading ? (<Spinner loading={loading} />) : (
+                <header className='flex items-start p-6'>
+                    {listing?.title}
+                </header>
+            )}
+        </section>
     );
 };
+
 export default ListingPage;

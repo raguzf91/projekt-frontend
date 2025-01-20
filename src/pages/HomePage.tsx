@@ -1,33 +1,40 @@
 import MenuBar from "../ui-components/MenuBar";
 import Filters from "../ui-components/Filters";
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState} from 'react';
 import { CSSTransition } from 'react-transition-group';
 import '../ui-components/css/Filter.css'; // Import the CSS for CSSTransition animations
 import Hero from "../ui-components/Hero";
-import { useNavbarFilter } from '../context/NavbarFilterContext';
-import { useSearchParams } from "react-router-dom";
+import { useNavbarFilter } from '../context/NavbarFilterProvider';
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 
 const HomePage  = () => {
     const [showFilter, setShowFilter] = useState(false);
-    const [currentMenuFilter, setCurrentMenuFilter] = useState<string>('Sve');
-    const { brojNocenja, dolazak, odlazak, gosti, regija } = useNavbarFilter();
+    const [currentMenuFilter, setCurrentMenuFilter] = useState<string>('');
+    const { brojNocenja} = useNavbarFilter();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { handleListingFilterChange } = useNavbarFilter();
+    const navigate = useNavigate();
+
     const handleShowFilterChange = (value: boolean) => {
+        console.log("filter filter: "+value);
         setShowFilter(value);
     };
 
-    const [searchParams, setSearchParams] = useSearchParams();
-    
-     
+
     const handleMenuFilterChange = (value : string) => {
         setCurrentMenuFilter(value);
 
     }
 
-    useEffect(() => {
-        setSearchParams({ category: currentMenuFilter, regija: regija, brojNocenja: brojNocenja.toString(), dolazak: dolazak, odlazak: odlazak, gosti: gosti.toString() });
-    }, [currentMenuFilter, brojNocenja, setSearchParams, dolazak, odlazak, gosti, regija]);
+    const handleNavigateToListing = (id: number) => {
+        console.log("navigating");
+        setCurrentMenuFilter('');
+        navigate(`/listing/${id}`);
+    };
 
+
+   
     
 
     return (
@@ -46,7 +53,7 @@ const HomePage  = () => {
                     <Filters onShowFilterChange={handleShowFilterChange} />
                 </div>
             </CSSTransition>
-            <Hero brojNocenja={brojNocenja} menuFilter={currentMenuFilter} />
+            <Hero brojNocenja={brojNocenja} menuFilter={currentMenuFilter} navigateToListing={handleNavigateToListing} />
         </main>
         </>
         

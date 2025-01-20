@@ -45,18 +45,11 @@ interface HeroBoxProps {
         category: string;
     };
     brojNocenja: number;
+    navigateToListing: (id: number) => void;
 }
 
-const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja}) => {
-
-    const navigate = useNavigate();
-
-    const handleNavigateToListing = (id: number) => {
-            console.log("navigating");
-            navigate(`/listing/${id}`, {state: {listing, brojNocenja}});
-        };
-
-
+const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, navigateToListing}) => {
+    
     
     const onChange = (currentSlide: number) => {
         console.log(currentSlide);
@@ -93,7 +86,7 @@ const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja}) => {
                     ))}
                 </Carousel>
             </ConfigProvider>
-            <div onClick={() => handleNavigateToListing(listing.id)} className="flex flex-col pl-2 gap-2">
+            <div onClick={() => navigateToListing(listing.id)} className="flex flex-col pl-2 gap-2">
                 <div className="flex justify-between items-center ">
                 <h2 className="text-xl font-bold">{listing.title}</h2>
                     <div className="flex gap-1 items-center">

@@ -8,11 +8,12 @@ import Spinner from "./Spinner";
 interface HeroProps {
     brojNocenja: number;
     menuFilter: string;
+    navigateToListing: (id: number) => void;
 };
 
 
 
-const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter}) => {
+const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing}) => {
 
     const [listings, setListings] = useState<[]>([]);
     const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter}) => {
     },[]);
 
     useEffect(() => {
-        if (menuFilter !== 'Sve') {
+        if (menuFilter !== '') {
             const fetchAllListingsByCategory = async () => {
                 const apiUrl = `http://localhost:8080/api/listing?category=${menuFilter}`;
                 console.log(apiUrl);
@@ -58,10 +59,7 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter}) => {
             };
             fetchAllListingsByCategory();
             
-        } else {
-            fetchAllListings();
-            
-        }
+        } 
     }, [menuFilter]);
 
 
@@ -71,7 +69,7 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter}) => {
         <section className="hero flex gap-8 justify-center  flex-wrap mr-24 ml-24 mt-8  h-screen">
             { loading ? (<Spinner loading={loading}/>) : (
                 listings.map((item, index) => (
-                    <HeroBox key = {index} listing = {item} brojNocenja = {brojNocenja}   />
+                    <HeroBox key = {index} listing = {item} brojNocenja = {brojNocenja} navigateToListing={navigateToListing}   />
                 ))
             )}
         </section>
