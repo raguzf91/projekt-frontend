@@ -58,8 +58,11 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing}
                 }
             };
             fetchAllListingsByCategory();
+            if(menuFilter === 'Sve') {
+                fetchAllListings();
             
-        } 
+        }
+    }
     }, [menuFilter]);
 
 

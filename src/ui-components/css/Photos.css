@@ -1,0 +1,46 @@
+.ant-carousel .slick-prev, .ant-carousel .slick-next {
+    color: transparent; /* Change this to your desired color */
+    width: 3rem; /* Adjust the size if needed */
+    height: 3rem;
+    background-color: white;
+    border-radius: 50%;
+    padding: 15px; /* Adjust padding as needed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust for exact centering */
+    z-index: 1; /* Ensure arrows are above other elements */
+}
+
+/* Override the default arrow styles */
+.ant-carousel .slick-prev::before, .ant-carousel .slick-next::before {
+    content: ''; /* Remove default content */
+    display: inline-block;
+    width: 16px; /* Adjust width as needed */
+    height: 16px; /* Adjust height as needed */
+    border: solid black; /* Change this to your desired color */
+    border-width: 0 3px 3px 0;
+    padding: 3px;
+}
+
+/* Rotate the arrows to the correct direction */
+.ant-carousel .slick-prev::before {
+    transform: rotate(135deg); /* Rotate to point left */
+}
+
+.ant-carousel .slick-next::before {
+    transform: rotate(-45deg); /* Rotate to point right */
+}
+
+/* Optional: Add hover effect */
+.ant-carousel .slick-prev:hover, .ant-carousel .slick-next:hover {
+    color: transparent; /* Change this to your desired hover color */
+    background-color: lightgray; /* Change this to your desired hover background color */
+}
+
+.ant-carousel .slick-slider .slick-list .slick-track::before {
+    width: 100%;
+    height: 100%;
+}

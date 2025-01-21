@@ -39,8 +39,6 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const [searchActive, setSearchActive] = useState(false);
     const [searchVisible, setSearchVisible] = useState(false);
     const whereFieldRef = useRef<HTMLInputElement>(null);
-    const dolazakFieldRef = useRef<HTMLInputElement>(null);
-    const odlazakFieldRef = useRef<HTMLInputElement>(null);
     const whoFieldRef = useRef<HTMLInputElement>(null);
     const [whereActive, setWhereActive] = useState(false);
     const [whoActive, setWhoActive] = useState(false);
@@ -52,20 +50,27 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const [odlazakRef, setOdlazakRef] = useState(odlazak);
     const [searchParams, setSearchParams] = useSearchParams();
     const navbarRef = useRef<HTMLDivElement>(null);
+    const datepickerRef = useRef<HTMLDivElement>(null);
+    
 
     const handleClickOutside = (event: MouseEvent) => {
-        if (navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
+        if (
+            navbarRef.current && !navbarRef.current.contains(event.target as Node) &&
+            datepickerRef.current && !datepickerRef.current.contains(event.target as Node)
+        ) {
             console.log("outside click");
             setSearchActive(false);
         }
     };
-
+    
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    
 
 
 
@@ -83,18 +88,18 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
 
     const toggleSearch = () => {
         setSearchVisible(!searchVisible);
-        console.log("search visible: "+searchVisible);
+        
     };
 
     const handleFilterChange = () => {
-        console.log("filter change");
+        
         const showFilter = true;
         onShowFilterChange(showFilter);
     };
 
     const handleSearchActive = () => {
         setSearchActive(true);
-        console.log("search active: "+searchActive);
+        
     };
 
     const handleWhereActive = () => {
@@ -111,14 +116,12 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
             setGostiRef(12);
         } else {
             setGostiRef(gostiRef + 1);
-            console.log("gostiRef: "+gostiRef);
+           
         }
     };
 
     const handleWhereChange = (index: number) => {
-        console.log("where active: "+whereActive);
         setRegijaRef(kontinenti[index].text); 
-        console.log("regija: "+regijaRef);
         toast.success('Odabrali ste regiju: '+kontinenti[index].text);
         setWhereActive(false);
         
@@ -127,7 +130,6 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const handleGostiMinus = (index: number) => {
         if (gostiRef > 0) {
             setGostiRef(gostiRef - 1);
-            console.log("gostiRef: "+gostiRef);
         } else {
             setGostiRef(0);
         }
@@ -152,19 +154,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     }, [dropdownRef]);
 
 
-    /*useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (odlazakFieldRef.current && !odlazakFieldRef.current.contains(event.target as Node)) {
-                setSearchActive(false);
-                setOdlazakActive(false);
-            }
-        };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [odlazakFieldRef]);*/
 
 
 
@@ -199,6 +189,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
         }
         console.log("odlazakDate: "+date);
         console.log("odlazakDateString: "+dateString);
+        console.log("dolazakRef: "+odlazakRef);
     };
 
     type RangePickerProps = GetProps<typeof DatePicker.RangePicker>;
@@ -229,8 +220,6 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
             const dolazakDate = dayjs(dolazakRef, 'DD-MM-YYYY');
             const odlazakDate = dayjs(odlazakRef, 'DD-MM-YYYY');
             const brojNocenja = odlazakDate.diff(dolazakDate, 'day');
-            console.log("broj nocenja: "+brojNocenja);
-            
             return brojNocenja;
     
         };
@@ -254,11 +243,6 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     };
 
 
-
-    
-
-
-
     return (
         <section ref={navbarRef} className="relative">
             {(loginVisible || registerVisible) && (
@@ -271,17 +255,17 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     <div className='upper-navbar w-full flex justify-between items-center '>
                         <img onClick={handleNavigateToHome} src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer ' />
                         {!ismdScreen && 
-                            <div onClick={handleSearchActive} className={`not-active-navbar ${searchActive ? 'hidden' : 'flex justify-between items-center relative pl-6 xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border-2 hover:shadow-xl cursor-pointer w-1/3 h-12 ml-8 '}`}>
+                            <div onClick={handleSearchActive} className={`not-active-navbar ${searchActive ? 'hidden' : 'flex justify-between items-center relative pl-6 xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border-2 hover:shadow-xl cursor-pointer w-1/3 2xl:w-1/2 h-12 ml-8 '}`}>
                             <div className='left-navbar flex items-center justify-center'>
-                                <p>{`${location === "" ? 'Bilo gdje' : location}`}</p>
+                                <p className='text-lg font-semibold'>{`${location === "" ? 'Bilo gdje' : location}`}</p>
                             </div>
                             <div className="border-l-4 h-8 2xl:h-12"></div>
                             <div className='middle-navbar'>
-                            <p>{`${period === "" ? 'Bilo kada' : `Odabrani period: ${period}`}`}</p>
+                            <p className='font-semibold text-lg'>{`${period === "" ? 'Bilo kada' : `Odabrani period: ${period}`}`}</p>
                             </div>
                             <div className="border-l-4 h-8 2xl:h-12"></div>
                             <div className='right-navbar'>
-                                <p>{`${gostiRef === 1 ? 'Unesite broj gostiju' : `Broj gostiju: ${gostiRef}` }`}</p>
+                                <p className='font-semibold text-lg'>{`${gostiRef === 1 ? 'Unesite broj gostiju' : `Broj gostiju: ${gostiRef}` }`}</p>
                             </div>
                             <div  className='search-icon cursor-pointer'>
                                     <FaSearch className={`${searchActive ? 'hidden' : ' h-10 w-10 2xl:w-12 2xl:h-12 2xl:p-3 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl  transition-colors duration-150'} `} />
@@ -302,7 +286,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
                     <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                         <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
-                        <input type="text" id="default-input-1" placeholder={`${regijaRef === '' ? 'Pretraži destinaciju' : regija}`} className="outline-none 2xl:text-md rounded-3xl   border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        <input type="text" id="default-input-1" placeholder={`${regijaRef === '' ? 'Pretraži destinaciju' : regijaRef}`} className="outline-none 2xl:text-md rounded-3xl   border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
                         
                     </div>
                     <div ref={whereFieldRef} className={`${(whereActive && searchActive) ? 'where-container absolute top-full left-0 bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
@@ -320,7 +304,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     </div>
                     
                     <div className="border-l-4 h-8 2xl:h-12"></div>
-                    <div ref={dolazakFieldRef} onClick={() => { handleSearchActive();}} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                    <div ref={datepickerRef} onMouseDown={(e) => e.stopPropagation()} onClick={() => { handleSearchActive();}} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
                         <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Dolazak</label>
                         <Space   direction="vertical">
                               <DatePicker
@@ -341,7 +325,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     </div>
                     
                     <div className="border-l-4 h-8 2xl:h-12"></div>
-                    <div ref={odlazakFieldRef} onClick={handleSearchActive} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2 '>
+                    <div ref={datepickerRef} onMouseDown={(e) => e.stopPropagation()} onClick={handleSearchActive} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2 '>
                         <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Odlazak</label>
                         <Space direction="vertical">
                               <DatePicker
@@ -434,7 +418,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     {ismdScreen && 
                         <div onClick={handleSearchActive} className={`not-active-navbar ${(searchActive) ? 'hidden' : `flex justify-between items-center relative   2xl:mr-24  3xl:mr-24 rounded-3xl border-2 hover:shadow-xl cursor-pointer w-1/2  h-12  shadow-md `}`}>
                         <div className='left-navbar flex items-center justify-center'>
-                            <p className='pl-8'>{`${location === "" ? 'Bilo gdje' : location}`}</p>
+                            <p className='pl-8 text-lg font-bold'>{`${location === "" ? 'Bilo gdje' : location}`}</p>
                         </div>
                         <div className="border-l-4 h-8 2xl:h-12"></div>
                         <div className='middle-navbar'>
@@ -471,7 +455,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                     </div>
                             </div>
                         <div className="border-l-4 h-8 2xl:h-12"></div>
-                        <div ref={dolazakFieldRef} onClick={() => { handleSearchActive();}} className='input-field w-1/5 p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
+                        <div ref={datepickerRef} onMouseDown={(e) => e.stopPropagation()} onClick={() => { handleSearchActive();}} className='input-field w-1/5 p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2'>
                                 <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Dolazak</label>
                                 <Space   direction="vertical">
                                       <DatePicker
@@ -489,7 +473,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                       />
                                 </Space>
                         </div>
-                        <div ref={odlazakFieldRef} onClick={handleSearchActive} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2 '>
+                        <div ref={datepickerRef} onMouseDown={(e) => e.stopPropagation()} onClick={handleSearchActive} className='input-field p-2 ml-2  flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2 '>
                                 <label htmlFor="default-input-2" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Odlazak</label>
                                 <Space direction="vertical">
                                       <DatePicker

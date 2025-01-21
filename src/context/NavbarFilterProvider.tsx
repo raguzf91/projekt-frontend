@@ -55,15 +55,16 @@ export const NavbarFilterProvider: React.FC<NavbarFilterProviderProps> = ({ chil
         const odlazakMonth = odlazak.split('-')[1];
         const odlazakDay = odlazak.split('-')[0];
         const odlazakYear = odlazak.split('-')[2];
+       
 
         if (dolazakMonth === odlazakMonth && dolazakYear === odlazakYear) {
-            return `${dolazakDay} - ${odlazakDay} ${dolazakMonth}`;
+            return `${dolazakDay} - ${odlazakDay}.${dolazakMonth}`;
         } else if (dolazakMonth !== odlazakMonth && dolazakYear === odlazakYear) {
-            return `${dolazakDay} ${dolazakMonth} - ${odlazakDay} ${odlazakMonth} `;
+            return `${dolazakDay}.${dolazakMonth} - ${odlazakDay}.${odlazakMonth} `;
         } else if (dolazakMonth === odlazakMonth && dolazakYear !== odlazakYear) {
-            return `${dolazakDay} - ${odlazakDay} ${dolazakMonth} ${dolazakYear}`;
+            return `${dolazakDay} - ${odlazakDay}.${dolazakMonth}.${odlazakYear}`;
         } else {
-            return `${dolazakDay} ${dolazakMonth} ${dolazakYear} - ${odlazakDay} ${odlazakMonth} ${odlazakYear}`;
+            return `${dolazakDay}.${dolazakMonth}.${dolazakYear} - ${odlazakDay}.${odlazakMonth}.${odlazakYear}`;
         }
     };
 
