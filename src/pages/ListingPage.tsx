@@ -11,6 +11,31 @@ import { FaStarHalf } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import userIcon from '../assets/images/userIcon.png';
 import dayjs from 'dayjs';
+import { FaWifi } from "react-icons/fa";
+import { TbToolsKitchen } from "react-icons/tb";
+import { FaRegSnowflake } from "react-icons/fa";
+import { FaTv } from "react-icons/fa";
+import { LuWashingMachine } from "react-icons/lu";
+import { BiSolidDryer } from "react-icons/bi";
+import { TbTemperatureSun } from "react-icons/tb";
+import { PiCity } from "react-icons/pi";
+import { FaUmbrellaBeach } from "react-icons/fa";
+import { FaSkiing } from "react-icons/fa";
+import { LuHouse } from "react-icons/lu";
+import { PiBuildingApartment } from "react-icons/pi";
+import { IoPeopleOutline } from "react-icons/io5";
+import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowUp } from "react-icons/io";
+import { PiMountains } from "react-icons/pi";
+import { FaRegCalendarCheck } from "react-icons/fa";
+import { PiDoorBold } from "react-icons/pi"; 
+import { MdOutlineBathtub } from "react-icons/md";
+import { PiSecurityCameraFill } from "react-icons/pi";
+import { FaParking } from "react-icons/fa";
+import { PiHairDryerBold } from "react-icons/pi";
+import { MdOutlineFireplace } from "react-icons/md";
+import { TbAlarmSmoke } from "react-icons/tb";
+import { PiWashingMachineBold } from "react-icons/pi";
 
 interface ListingPageProps {
     location: string;
@@ -46,11 +71,19 @@ const ListingPage: React.FC<ListingPageProps> = () => {
 
     interface Photo {
         photoUrl: string;
+        name: string;
+        bedroomPhoto: boolean;
     }
 
     interface Review {
         description: string;
         numberOfStars: number;
+    }
+
+    interface Amenity {
+        id: number;
+        description: string;
+        icon: string;
     }
 
     interface Listing {
@@ -68,6 +101,9 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         numberOfBeds: number;
         numberOfBedrooms: number;
         numberOfReviews: number;
+        secondaryTitle: string;
+        typeOfListing: string;
+        amenities: Amenity[]
     }
 
     const [listing, setListing] = useState<Listing | null>(null);
@@ -132,7 +168,9 @@ const ListingPage: React.FC<ListingPageProps> = () => {
     }, [id, dolazak, odlazak, gosti, handleListingFilterChange]);
 
     const handleShowPhotos = () => {
+        console.log("show photos");
         setShowPhotos(!showPhotos);
+        console.log(showPhotos);
     };
 
     const handleDarkScreenChange = () => {
@@ -171,9 +209,9 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                             </div>
                         
                     </div>
-                    <div className='description-container mt-4'>
-                        <div className='description-left w-1/2'>
-                            {listing && <h2 className='font-bold text-2xl'>{listing.description}</h2>}
+                    <div className='main-description-container w-3/4 mt-4 border-b-2 pb-4'>
+                        <div className='description-left w-full'>
+                            {listing && <h2 className='font-bold text-2xl'>{listing.secondaryTitle}</h2>}
                             <div className='flex gap-2 ml-2'>
                                 <p className='font-semibold'>{`${listing?.maxGuests} gostiju`}</p>
                                 <p className='text-black'>•</p>
@@ -182,15 +220,15 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                                 <p className='font-semibold'>{`${listing?.numberOfBeds} kreveta`}</p>   
                             </div>
                             <div className='host-container p-4  w-full flex-col items-center  mt-4'>
-                                <div className='flex ribbon-container border-2 h-24 items-center justify-center '>
-                                    <img className='mr-4 w-1/4 ' src={guestFavorite} alt="guest favorite" />
+                                <div className='flex ribbon-container border-2 h-24  items-center justify-center  '>
+                                    <img className='mr-4  xl:h-3/4  md:w-1/4 2xl:w-1/5 ' src={guestFavorite} alt="guest favorite" />
                                     <div className='flex w-2/4 items-center justify-center '>
-                                        <p className='font-semibold text-lg '>Jedan od najdražih domova na Airbnbu, prema recenzijama gostiju</p>
+                                        <p className='font-semibold xl:text-base md:text-sm 2xl:text-lg '>Jedan od najdražih domova na Airbnbu, prema recenzijama gostiju</p>
                                     </div>
                                     
                                     <div className='flex-col w-1/4 justify-center items-center gap-2 '>
-                                        <p className='review-score text-center text-2xl font-bold'>{listing?.rating}</p>
-                                        <div className='flex gap-1 items-center justify-center'>
+                                        <p className='review-score text-center 2xl:text-2xl md:text-xl font-bold'>{listing?.rating}</p>
+                                        <div className='flex md:w-full xl:w-full gap-1 items-center justify-center'>
                                             {stars}
                                         </div>
                                     </div>
@@ -221,14 +259,56 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                        
                              
                     </div>
+                    <div className='amenities-container mt-8 border-b-2 w-3/4'>
+                        {
+                            listing?.amenities.map((amenity, index) => (
+                                
+                                <div className='amenity-container flex-col gap-2 mb-4 ' key={index}>
+                                    <div className='flex items-center'>
+                                        {amenity.icon === '<TbToolsKitchen />' && <TbToolsKitchen className='w-6 h-6 mr-8' />}
+                                        {amenity.icon === '<IoPeopleOutline />' && <IoPeopleOutline className='w-6 h-6 mr-8' />}
+                                        {amenity.icon === '<PiMountains />' && <PiMountains className='w-6 h-6 mr-8' />}
+                                        {amenity.icon === '<FaRegCalendarCheck />' && <FaRegCalendarCheck className='w-6 h-6 mr-8' />}
+                                        {amenity.icon === '<PiDoorBold />' && <PiDoorBold className='w-6 h-6 mr-8' />}
+                                        {amenity.icon === '<FaParking />' && <FaParking className='w-6 h-6 mr-8' />}
+                                        <p className='font-semibold'>{amenity.description}</p>
+                                    </div>
+                                    <p className='text-sm text-slate-400 ml-14'>
+                                        {amenity.description === 'Kuhinja' && 'Gosti kažu da ovaj dom ima ono što vam je potrebno za kuhanje'}
+                                        {amenity.description === 'Besplatno otkazivanje' && 'Dobit če te puni povrat novca ako se predomislite.'}
+                                        {amenity.description === 'Samostalni dolazak' && 'Samostalni check-in u smještaj uz pomoć digitalne brave.'}
+                                        {amenity.description === 'Besplatan parking' && 'Besplatan parking na lokaciji.'}
+                                        {amenity.description === 'Pogled na planine' && 'Imati če te prekrasan pogled na planine iz topline vašega doma.'}
+                                        {amenity.description === 'Dijeljenje stana' && 'Ovaj dom dijeliti ćete sa drugim gostima.'}
+                                    </p>
+                                </div>
+                            ))
+                        }                     
+                    </div>
+                    <div className='description-container mt-8 pb-8 border-b-2 w-3/4'>
+                        <p>
+                            {listing?.description}
+                        </p>
+                    </div>
+                    <div className='bedroom-container mt-8 border-b-2 w-3/4'>
+                        <h1 className='text-3xl font-semibold'>Gdje ćete spavati</h1>
+                        <div className='bedroom-info-container flex gap-4 mt-4'>
+                            {listing?.photos.map((photo, index) => (
+                                photo.bedroomPhoto && (
+                                    <div className='bedroom-photo w-1/2' key={index}>
+                                        <img onClick={handleShowPhotos} className='w-3/4 h-3/4 cursor-pointer hover:shadow-lg' src={photo.photoUrl} alt='bedroom photo' />
+                                        <h2 className='text-xl mt-2'>{`${index - index + 1}. Spavaća soba`}</h2>                          
+                                    </div>
+                                )
+                            ))}
+                    </div>
+                </div>
                 </div>
                 {showPhotos && <Photos onShowPhotosChange={handleShowPhotos} onDarkScreenChange={handleDarkScreenChange} photos={listing?.photos || []} />}
-                </div>
-               
-                
-            )}
-        </section>
-    );
+        </div>
+    )}
+</section>
+);
 };
 
 export default ListingPage;

@@ -43,6 +43,7 @@ interface HeroBoxProps {
         description: string;
         reviews: string[];
         category: string;
+        typeOfListing: string;
     };
     brojNocenja: number;
     navigateToListing: (id: number) => void;
@@ -88,7 +89,7 @@ const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, navigateToListi
             </ConfigProvider>
             <div onClick={() => navigateToListing(listing.id)} className="flex flex-col pl-2 gap-2">
                 <div className="flex justify-between items-center ">
-                <h2 className="text-xl font-bold">{listing.title}</h2>
+                <h2 className="text-xl font-bold">{`${listing.typeOfListing} u ${listing.location.city}`}</h2>
                     <div className="flex gap-1 items-center">
                         {<IoMdStar />}
                         <p className="text-sm font-semibold pr-4">{listing.rating}</p>
