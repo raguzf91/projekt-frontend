@@ -36,6 +36,17 @@ import { PiHairDryerBold } from "react-icons/pi";
 import { MdOutlineFireplace } from "react-icons/md";
 import { TbAlarmSmoke } from "react-icons/tb";
 import { PiWashingMachineBold } from "react-icons/pi";
+import { MdOutlinePets } from "react-icons/md";
+import { IoMdStar } from "react-icons/io";
+import { Flex, Progress } from 'antd';
+import { PiSprayBottleBold } from "react-icons/pi";
+import { SiTicktick } from "react-icons/si";
+import { LuKeyRound } from "react-icons/lu";
+import { HiOutlineLocationMarker } from "react-icons/hi";
+import { CiChat2 } from "react-icons/ci";
+import { IoPricetagOutline } from "react-icons/io5";
+import { IoMdClose } from "react-icons/io";
+import ListingRatings from '../ui-components/ListingRatings';
 
 interface ListingPageProps {
     location: string;
@@ -67,6 +78,7 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         speaksLanguages: string[];
         profilePhoto: string;
         createdAt : string;
+        
     }
 
     interface Photo {
@@ -78,6 +90,14 @@ const ListingPage: React.FC<ListingPageProps> = () => {
     interface Review {
         description: string;
         numberOfStars: number;
+        cleanliness: number;
+        communication: number;
+        precision: number;
+        location: number;
+        checkIn: number;
+        value: number;
+        user: User;
+        createdAt : string
     }
 
     interface Amenity {
@@ -115,7 +135,15 @@ const ListingPage: React.FC<ListingPageProps> = () => {
     const [darkScreen, setDarkScreen] = useState(false);
     const [stars, setStars] = useState<JSX.Element[]>([]);
     const [yearsHosting, setYearsHosting] = useState<number>(0);
-
+    const [reviewPercentageList, setReviewPercentageList] = useState<{ numberOfStars: number; percentage: number }[]>([]);
+    const [cleanliness, setCleanliness] = useState<number>(0);
+    const [communication, setCommunication] = useState<number>(0);
+    const [locationRating, setLocationRating] = useState<number>(0);
+    const [checkInRating, setCheckInRating] = useState<number>(0);
+    const [valueRating, setValueRating] = useState<number>(0);
+    const [precisionRating, setPrecisionRating] = useState<number>(0);
+    const [expandedReviewIndex , setExpandedReviewIndex] = useState<number>(-1);
+    const [showAllReviews, setShowAllReviews] = useState<boolean>(false);
     const calculateStarReview = (rating: number) => {
         const starsArray = [];
         const fullStars = Math.floor(rating);
@@ -133,12 +161,89 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         return starsArray;
     };
 
+    const calculateCleanliness = () => {
+        const cleanliness = listing?.reviews.map(review => review.cleanliness);
+        const totalCleanliness = cleanliness?.reduce((acc, curr) => acc + curr, 0);
+        const averageCleanliness = totalCleanliness ? totalCleanliness / (cleanliness?.length ?? 1) : 1;
+        return averageCleanliness;
+    };
+
+    const calculateCommunication = () => {
+        const communication = listing?.reviews.map(review => review.communication);
+        const totalCommunication = communication?.reduce((acc, curr) => acc + curr, 0);
+        const averageCommunication = totalCommunication ? totalCommunication / (communication?.length ?? 1) : 1;
+        return averageCommunication;
+    };
+
+    const calculateLocation = () => {
+        const location = listing?.reviews.map(review => review.location);
+        const totalLocation = location?.reduce((acc, curr) => acc + curr, 0);
+        const averageLocation = totalLocation ? totalLocation / (location?.length ?? 1) : 1;
+        return averageLocation;
+    };
+
+    const calculateCheckIn = () => {
+        const checkIn = listing?.reviews.map(review => review.checkIn);
+        const totalCheckIn = checkIn?.reduce((acc, curr) => acc + curr, 0);
+        const averageCheckIn = totalCheckIn ? totalCheckIn / (checkIn?.length ?? 1) : 1;
+        return averageCheckIn;
+    };
+
+    const calculateValue = () => {
+        const value = listing?.reviews.map(review => review.value);
+        const totalValue = value?.reduce((acc, curr) => acc + curr, 0);
+        const averageValue = totalValue ? totalValue / (value?.length ?? 1) : 1;
+        return averageValue;
+    };
+
+    const calculatePrecision = () => {
+        const precision = listing?.reviews.map(review => review.precision);
+        const totalPrecision = precision?.reduce((acc, curr) => acc + curr, 0);
+        const averagePrecision = totalPrecision ? totalPrecision / (precision?.length ?? 1) : 1;
+        return averagePrecision;
+    };
+
     useEffect(() => {
         if (listing) {
             const calculatedStars = calculateStarReview(listing.rating);
             setStars(calculatedStars);
         }
     }, [listing]);
+
+    useEffect(() => {
+        const reviewPercentage = [
+            { numberOfStars: 5, percentage: 0 },
+            { numberOfStars: 4, percentage: 0 },
+            { numberOfStars: 3, percentage: 0 },
+            { numberOfStars: 2, percentage: 0 },
+            { numberOfStars: 1, percentage: 0 }
+        ];
+        const calculatePercentage = () => {
+            const totalReviews = listing?.numberOfReviews;
+            const reviewStars = listing?.reviews.map(review => review.numberOfStars);
+            const reviewStarsCount = reviewStars?.reduce((acc, curr) => {
+                if (acc[curr]) {
+                    acc[curr]++;
+                } else {
+                    acc[curr] = 1;
+                }
+                return acc;
+            }, {} as { [key: number]: number });
+
+            for (let i = 1; i <= 5; i++) {
+                reviewPercentage[i - 1].percentage = reviewStarsCount && reviewStarsCount[i] && totalReviews ? (reviewStarsCount[i] / totalReviews) * 100 : 0;
+            }
+        };
+        calculatePercentage();
+        setReviewPercentageList(reviewPercentage);
+        setCheckInRating(calculateCheckIn());
+        setCleanliness(calculateCleanliness());
+        setCommunication(calculateCommunication());
+        setLocationRating(calculateLocation());
+        setValueRating(calculateValue());
+        setPrecisionRating(calculatePrecision());
+
+    }, [listing?.numberOfReviews, listing?.reviews]);
     
     useEffect(() => {
         const fetchListing = async () => {
@@ -167,6 +272,15 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         
     }, [id, dolazak, odlazak, gosti, handleListingFilterChange]);
 
+    const calculateTimePassed = (date: string) => {
+        const createdAt = dayjs(date);
+        const yearsPassed = dayjs().diff(createdAt, 'year');
+        const monthsPassed = dayjs().diff(createdAt, 'month');
+        const daysPassed = dayjs().diff(createdAt, 'day');
+        const timePassed = yearsPassed > 0 ? `${yearsPassed} godina` : monthsPassed > 0 ? `${monthsPassed} mjeseci` : `${daysPassed} dana`;
+        return timePassed;
+    };
+
     const handleShowPhotos = () => {
         console.log("show photos");
         setShowPhotos(!showPhotos);
@@ -177,16 +291,39 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         setDarkScreen(!darkScreen);
     }
 
+    const mainAmenities = [
+        '<TbToolsKitchen />',
+        '<IoPeopleOutline />',
+        '<PiMountains />',
+        '<FaRegCalendarCheck />',
+        '<PiDoorBold />',
+        '<FaParking />'
+    ];
+
+    const toggleShowMore = (index: number) => {
+        setExpandedReviewIndex(expandedReviewIndex === index ? -1 : index);
+    };
+
+    const truncateText = (text: string, length: number) => {
+        if (text.length <= length) return text;
+        return text.substring(0, length) + '...';
+    };
+
+    const handleShowAllReviews = () => {
+        setShowAllReviews(!showAllReviews);
+    };
+
 
 
 
    
 
     return (
-        <section className={`listing-section mt-6  ${darkScreen ? 'bg-black' : ''} ${showPhotos ? 'pr-0 pl-0 ' : 'pr-20 pl-20'}`}>
+        <section className={`listing-section mt-6  ${darkScreen ? 'bg-black' : ''} ${showPhotos ? 'pr-0 pl-0 ' : 'pr-40 pl-40'}`}>
             {loading ? (<Spinner loading={loading} />) : (
                 <div className={`${showPhotos ? ' flex items-center  justify-center' : ''}`}>
-                     <div className={`${showPhotos ? 'hidden' : 'listing-container'}  `}>
+                     {showAllReviews && <div className="fixed inset-0 bg-black opacity-50"></div>}
+                     <div className={`${showPhotos ? 'hidden' : 'listing-container'} `}>
                         <div className='title-container flex justify-between items-center'>
                             {listing && <h1 className='font-bold text-3xl'>{listing.title}</h1>}
                             <div className='like-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
@@ -212,7 +349,7 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                     <div className='main-description-container w-3/4 mt-4 border-b-2 pb-4'>
                         <div className='description-left w-full'>
                             {listing && <h2 className='font-bold text-2xl'>{listing.secondaryTitle}</h2>}
-                            <div className='flex gap-2 ml-2'>
+                            <div className='flex gap-2'>
                                 <p className='font-semibold'>{`${listing?.maxGuests} gostiju`}</p>
                                 <p className='text-black'>•</p>
                                 <p className='font-semibold'>{`${listing?.numberOfBedrooms} spavaćih soba`}</p>
@@ -260,33 +397,32 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                              
                     </div>
                     <div className='amenities-container mt-8 border-b-2 w-3/4'>
-                        {
-                            listing?.amenities.map((amenity, index) => (
-                                
-                                <div className='amenity-container flex-col gap-2 mb-4 ' key={index}>
-                                    <div className='flex items-center'>
-                                        {amenity.icon === '<TbToolsKitchen />' && <TbToolsKitchen className='w-6 h-6 mr-8' />}
-                                        {amenity.icon === '<IoPeopleOutline />' && <IoPeopleOutline className='w-6 h-6 mr-8' />}
-                                        {amenity.icon === '<PiMountains />' && <PiMountains className='w-6 h-6 mr-8' />}
-                                        {amenity.icon === '<FaRegCalendarCheck />' && <FaRegCalendarCheck className='w-6 h-6 mr-8' />}
-                                        {amenity.icon === '<PiDoorBold />' && <PiDoorBold className='w-6 h-6 mr-8' />}
-                                        {amenity.icon === '<FaParking />' && <FaParking className='w-6 h-6 mr-8' />}
-                                        <p className='font-semibold'>{amenity.description}</p>
-                                    </div>
-                                    <p className='text-sm text-slate-400 ml-14'>
-                                        {amenity.description === 'Kuhinja' && 'Gosti kažu da ovaj dom ima ono što vam je potrebno za kuhanje'}
-                                        {amenity.description === 'Besplatno otkazivanje' && 'Dobit če te puni povrat novca ako se predomislite.'}
-                                        {amenity.description === 'Samostalni dolazak' && 'Samostalni check-in u smještaj uz pomoć digitalne brave.'}
-                                        {amenity.description === 'Besplatan parking' && 'Besplatan parking na lokaciji.'}
-                                        {amenity.description === 'Pogled na planine' && 'Imati če te prekrasan pogled na planine iz topline vašega doma.'}
-                                        {amenity.description === 'Dijeljenje stana' && 'Ovaj dom dijeliti ćete sa drugim gostima.'}
-                                    </p>
-                                </div>
-                            ))
-                        }                     
-                    </div>
+                                {listing?.amenities
+                                    .filter(amenity => mainAmenities.includes(amenity.icon))
+                                    .map((amenity, index) => (
+                                        <div className='amenity-container flex-col gap-2 mb-4 ' key={index}>
+                                            <div className='flex items-center'>
+                                                {amenity.icon === '<TbToolsKitchen />' && <TbToolsKitchen className='w-6 h-6 mr-8' />}
+                                                {amenity.icon === '<IoPeopleOutline />' && <IoPeopleOutline className='w-6 h-6 mr-8' />}
+                                                {amenity.icon === '<PiMountains />' && <PiMountains className='w-6 h-6 mr-8' />}
+                                                {amenity.icon === '<FaRegCalendarCheck />' && <FaRegCalendarCheck className='w-6 h-6 mr-8' />}
+                                                {amenity.icon === '<PiDoorBold />' && <PiDoorBold className='w-6 h-6 mr-8' />}
+                                                {amenity.icon === '<FaParking />' && <FaParking className='w-6 h-6 mr-8' />}
+                                                <p className='font-semibold'>{amenity.description}</p>
+                                            </div>
+                                            <p className='text-sm text-slate-400 ml-14'>
+                                                {amenity.description === 'Kuhinja' && 'Gosti kažu da ovaj dom ima ono što vam je potrebno za kuhanje'}
+                                                {amenity.description === 'Besplatno otkazivanje' && 'Dobit če te puni povrat novca ako se predomislite.'}
+                                                {amenity.description === 'Samostalni dolazak' && 'Samostalni check-in u smještaj uz pomoć digitalne brave.'}
+                                                {amenity.description === 'Besplatan parking' && 'Besplatan parking na lokaciji.'}
+                                                {amenity.description === 'Pogled na planine' && 'Imati čete prekrasan pogled na planine iz topline vašega doma.'}
+                                                {amenity.description === 'Dijeljenje stana' && 'Ovaj dom dijeliti ćete sa drugim gostima.'}
+                                            </p>
+                                        </div>
+                                    ))}
+                            </div>
                     <div className='description-container mt-8 pb-8 border-b-2 w-3/4'>
-                        <p>
+                        <p className='font-semibold'>
                             {listing?.description}
                         </p>
                     </div>
@@ -303,8 +439,120 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                             ))}
                     </div>
                 </div>
+                <div className='offers-container mt-8 border-b-2 w-3/4'>
+                        <h1 className='text-2xl font-bold '>Što ovaj smještaj nudi</h1>
+                        <div className='grid grid-cols-2 p-8'>
+                            {listing?.amenities.map((amenity, index) => (
+                                <div className='amenity-container flex gap-2 mt-4' key={index}>
+                                    {amenity.icon === '<FaWifi />' && <FaWifi className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<TbToolsKitchen />' && <TbToolsKitchen className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<FaRegSnowflake />' && <FaRegSnowflake className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<FaTv />' && <FaTv className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<LuWashingMachine />' && <LuWashingMachine className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<BiSolidDryer />' && <BiSolidDryer className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<TbTemperatureSun />' && <TbTemperatureSun className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiCity />' && <PiCity className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<FaUmbrellaBeach />' && <FaUmbrellaBeach className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<FaSkiing />' && <FaSkiing className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<LuHouse />' && <LuHouse className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiBuildingApartment />' && <PiBuildingApartment className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<IoPeopleOutline />' && <IoPeopleOutline className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiMountains />' && <PiMountains className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<FaRegCalendarCheck />' && <FaRegCalendarCheck className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiDoorBold />' && <PiDoorBold className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<MdOutlineBathtub />' && <MdOutlineBathtub className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiSecurityCameraFill />' && <PiSecurityCameraFill className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<FaParking />' && <FaParking className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiHairDryerBold />' && <PiHairDryerBold className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<MdOutlineFireplace />' && <MdOutlineFireplace className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<TbAlarmSmoke />' && <TbAlarmSmoke className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<PiWashingMachineBold />' && <PiWashingMachineBold className='w-6 h-6 mr-8' />}
+                                    {amenity.icon === '<MdOutlinePets />' && <MdOutlinePets className='w-6 h-6 mr-8' />}
+                                    <p className='font-semibold'>{amenity.description}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <ListingRatings direction='flex' rating={listing?.rating} numberOfReviews={listing?.numberOfReviews} reviewPercentageList={reviewPercentageList} cleanliness={cleanliness} 
+                        precisionRating={precisionRating} checkInRating={checkInRating} locationRating={locationRating} 
+                        communicationRating={communication} valueRating={valueRating} />
+                    <div className='reviews-container mt-8 border-b-2 pb-8 w-3/4'>
+                        <div className='flex flex-wrap '>
+                            {listing?.reviews.map((review, index) => (
+                                <div className='review-container flex-col  w-1/3 h-1/2 mb-10 p-6'>
+                                    <div className='flex items-center gap-2'>
+                                        <img className='w-10 h-10 rounded-full' src={userIcon} alt="user icon" />
+                                        <div className='flex-col gap-1 ml-3'>
+                                            <p className='font-semibold'>{review?.user.firstName}</p>
+                                            <p >Na airbnbu je {calculateTimePassed(review?.user.createdAt)}</p>
+                                        </div>
+                                    </div>
+                                    <div className='flex gap-1 items-center mt-2'>
+                                        <div className='flex gap-1 w-14'>
+                                            {calculateStarReview(review.numberOfStars)}
+                                        </div>
+                                        
+                                        <p className='ml-2 text-sm'>{`Prije ${calculateTimePassed(review.createdAt)}`}</p>
+                                    </div>
+                                        <p className='mt-2'>
+                                            {expandedReviewIndex === index ? review.description : truncateText(review.description, 100)}
+                                            <span
+                                                className='cursor-pointer hover:underline font-bold '
+                                                onClick={() => toggleShowMore(index)}
+                                            >
+                                                {`${review.description.length < 100 ? '' : `${expandedReviewIndex === index ? ' Prikaži manje' : ' Prikaži više'}`}`}
+                                            </span>
+                                        </p>
+                                </div>
+                            ))}
+                            
+                        </div>
+                        <div>
+                            <button onClick={handleShowAllReviews} className='text-base gap-1 mt-4 p-1 text-center border-black  hover:bg-slate-50 hover:shadow-lg border-2 rounded-3xl w-40 h-12'>{`Prikaži ${listing?.numberOfReviews} recenzije`}</button>
+                        </div>
+                    </div>
                 </div>
                 {showPhotos && <Photos onShowPhotosChange={handleShowPhotos} onDarkScreenChange={handleDarkScreenChange} photos={listing?.photos || []} />}
+                {showAllReviews && (
+                <div className='fixed inset-0 z-50 flex  justify-center items-center bg-black bg-opacity-50'>
+                    <div className='bg-white w-3/4 h-5/6 p-10 rounded-lg overflow-auto'>
+                        <div className='flex justify-end'>
+                            <IoMdClose className='w-8 h-8 p-1 cursor-pointer hover:bg-slate-100 rounded-full' onClick={handleShowAllReviews} />
+                        </div>
+                      
+                        <div className='reviews-content flex w-full'>
+                        <div className='w-1/2'>
+                            <ListingRatings direction='flex-col' rating={listing?.rating} numberOfReviews={listing?.numberOfReviews} reviewPercentageList={reviewPercentageList} cleanliness={cleanliness} 
+                        precisionRating={precisionRating} checkInRating={checkInRating} locationRating={locationRating} 
+                        communicationRating={communication} valueRating={valueRating} />
+                        </div>
+                        <div className='w-1/2'>
+                        {listing?.reviews.map((review, index) => (
+                                <div className='review-container flex-col mb-4' key={index}>
+                                    <div className='flex items-center gap-2'>
+                                        <img className='w-10 h-10 rounded-full' src={userIcon} alt="user icon" />
+                                        <div className='flex-col gap-1 ml-3'>
+                                            <p className='font-semibold'>{review?.user.firstName}</p>
+                                            <p>Na airbnbu je {calculateTimePassed(review?.user.createdAt)}</p>
+                                        </div>
+                                    </div>
+                                    <div className='flex gap-1 items-center mt-2'>
+                                        <div className='flex gap-1 w-14'>
+                                            {calculateStarReview(review.numberOfStars)}
+                                        </div>
+                                        <p className='ml-2 text-sm'>{`Prije ${calculateTimePassed(review.createdAt)}`}</p>
+                                    </div>
+                                    <p className='mt-2'>
+                                        {review.description}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                          
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )}
 </section>
