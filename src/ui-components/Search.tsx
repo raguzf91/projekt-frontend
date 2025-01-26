@@ -20,6 +20,25 @@ import AddRemove from './AddRemove';
 interface SearchProps {
     toggleSearchContainer: (searchVisible : boolean) => void,
 }
+
+const handleGostiMinus = (gosti:number, setGosti: (value:number) => void) => {
+    if (gosti > 0) {
+        setGosti(gosti - 1);
+        console.log("gosti: "+gosti);
+    } else {
+        setGosti(0);
+    }
+};
+
+
+const handleGostiPlus = (gosti:number, setGosti: (value:number) => void) => {
+    if(gosti > 12) {
+        setGosti(12);
+    } else {
+        setGosti(gosti + 1);
+        console.log("gosti: "+gosti);
+    }
+};
 const Search: React.FC<SearchProps> = ({ toggleSearchContainer })  => {
     const isSmScreen = useMediaQuery({ query: '(max-width: 768px)' });
     const [searchActive, setSearchActive] = useState(false);
@@ -74,24 +93,7 @@ const Search: React.FC<SearchProps> = ({ toggleSearchContainer })  => {
 
     
     
-        const handleGostiMinus = (index: number) => {
-            if (gosti > 0) {
-                setGosti(gosti - 1);
-                console.log("gosti: "+gosti);
-            } else {
-                setGosti(0);
-            }
-        };
-
-
-        const handleGostiPlus = (index: number) => {
-            if(gosti > 12) {
-                setGosti(12);
-            } else {
-                setGosti(gosti + 1);
-                console.log("gosti: "+gosti);
-            }
-        };
+        
 
         const handleIzbrisiSve = () => {
             setRegija('');
@@ -214,4 +216,5 @@ const Search: React.FC<SearchProps> = ({ toggleSearchContainer })  => {
        
     );
 };
+export { handleGostiPlus, handleGostiMinus };
 export default Search;

@@ -1,0 +1,12 @@
+.ant-space-item::before {
+    width: 50% !important;
+}
+
+div.ant-space-item:nth-child(1) {
+    width: 50% !important;
+}
+
+.sticky-container > :nth-child(3) {
+    /* Add your styles here */
+    background-color: lightblue;
+  }

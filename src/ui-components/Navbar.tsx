@@ -24,7 +24,8 @@ import "./css/Navbar.css"
 import {toast} from 'react-toastify';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
-
+import { Autocomplete } from '@react-google-maps/api';
+import { useSearchParamsContext } from '../context/SearchParamsContext';
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
     setBrojNocenja: (value: number) => void;
@@ -48,10 +49,12 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const nextDay = dayjs().add(1, 'day').format('DD-MM-YYYY'); // Get the day after the current date
     const [dolazakRef, setDolazakRef] = useState(dolazak);
     const [odlazakRef, setOdlazakRef] = useState(odlazak);
-    const [searchParams, setSearchParams] = useSearchParams();
     const navbarRef = useRef<HTMLDivElement>(null);
     const datepickerRef = useRef<HTMLDivElement>(null);
-    
+    const [hideNavbar, setHideNavbar] = useState(false);
+
+    const { searchParams, setSearchParams } = useSearchParamsContext();
+    const verificationType = searchParams.get('verificationType');
 
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -242,15 +245,23 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
         }, 0);
     };
 
+    const handleHideNavbar = (hide: boolean) => {
+        console.log("hide: "+hide);
+        setHideNavbar(hide);
+    };
+
+    
+
+    
 
     return (
-        <section ref={navbarRef} className="relative">
+        <section ref={navbarRef} >
             {(loginVisible || registerVisible) && (
                 
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
             <nav className='navbar'>
-                <div className={`navbar-container ${isSmScreen ? 'hidden' : 'flex md:flex-col justify-between items-center p-4 2xl:mr-4 2xl:p-8 border border-b-gray-500'}`}>
+                <div className={`navbar-container ${verificationType === 'ACTIVATE_ACCOUNT' ? 'hidden' : 'flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'}`}>
                    
                     <div className='upper-navbar w-full flex justify-between items-center '>
                         <img onClick={handleNavigateToHome} src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer ' />
@@ -286,7 +297,10 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
                     <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                         <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
-                        <input type="text" id="default-input-1" placeholder={`${regijaRef === '' ? 'Pretraži destinaciju' : regijaRef}`} className="outline-none 2xl:text-md rounded-3xl   border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        <Autocomplete>
+                            <input type="text" id="default-input-1" placeholder={`${regijaRef === '' ? 'Pretraži destinaciju' : regijaRef}`} className="outline-none 2xl:text-md rounded-3xl   border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
+                        </Autocomplete>
+                        
                         
                     </div>
                     <div ref={whereFieldRef} className={`${(whereActive && searchActive) ? 'where-container absolute top-full left-0 bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
@@ -397,18 +411,16 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                             <a href="#" onClick={toggleLogin} className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Prijava</a>
                                         </div>
                                         <ul className="py-2 text-md text-gray-700 dark:text-gray-200" aria-labelledby="dropdownInformationButton">
+                                            
                                             <li>
-                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Dashboard</a>
+                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profil</a>
                                             </li>
                                             <li>
-                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Settings</a>
-                                            </li>
-                                            <li>
-                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Earnings</a>
+                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lista želja</a>
                                             </li>
                                         </ul>
                                         <div className="py-2">
-                                            <a href="#" className="block font-semibold px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Sign out</a>
+                                            <a href="#" className="block font-semibold px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Odjava</a>
                                         </div>
                                     </div>
                                 )}
@@ -562,7 +574,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                 classNames="fade"
                 unmountOnExit
             >
-                <Signup toggleRegister={toggleRegister} />
+                <Signup toggleRegister={toggleRegister} handleHideNavbar={handleHideNavbar} />
             </CSSTransition>
             <CSSTransition
                 in={searchVisible}

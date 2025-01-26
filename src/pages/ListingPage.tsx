@@ -7,6 +7,8 @@ import { LuHeart } from "react-icons/lu";
 import { BsGrid3X3GapFill } from "react-icons/bs";
 import Photos from '../ui-components/Photos';
 import guestFavorite  from '../assets/images/guestFavorite.png';
+import leftVijenac from '../assets/images/left-vijenac.png';
+import rightVijenac from '../assets/images/right-vijenac.png';
 import { FaStarHalf } from "react-icons/fa";
 import { FaStar } from "react-icons/fa";
 import userIcon from '../assets/images/userIcon.png';
@@ -24,8 +26,6 @@ import { FaSkiing } from "react-icons/fa";
 import { LuHouse } from "react-icons/lu";
 import { PiBuildingApartment } from "react-icons/pi";
 import { IoPeopleOutline } from "react-icons/io5";
-import { IoIosArrowDown } from "react-icons/io";
-import { IoIosArrowUp } from "react-icons/io";
 import { PiMountains } from "react-icons/pi";
 import { FaRegCalendarCheck } from "react-icons/fa";
 import { PiDoorBold } from "react-icons/pi"; 
@@ -37,24 +37,24 @@ import { MdOutlineFireplace } from "react-icons/md";
 import { TbAlarmSmoke } from "react-icons/tb";
 import { PiWashingMachineBold } from "react-icons/pi";
 import { MdOutlinePets } from "react-icons/md";
-import { IoMdStar } from "react-icons/io";
-import { Flex, Progress } from 'antd';
-import { PiSprayBottleBold } from "react-icons/pi";
-import { SiTicktick } from "react-icons/si";
-import { LuKeyRound } from "react-icons/lu";
-import { HiOutlineLocationMarker } from "react-icons/hi";
-import { CiChat2 } from "react-icons/ci";
-import { IoPricetagOutline } from "react-icons/io5";
+import { GiAtSea } from "react-icons/gi";
+import { DatePicker, Space, Carousel } from "antd";
+import type { DatePickerProps } from 'antd';
 import { IoMdClose } from "react-icons/io";
 import ListingRatings from '../ui-components/ListingRatings';
-
+import AddRemove from '../ui-components/AddRemove';
+import { handleGostiMinus, handleGostiPlus } from '../ui-components/Search';
+import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { MdOutlineKeyboardArrowUp } from "react-icons/md";
+import { GoogleMap, Marker } from '@react-google-maps/api'
+import Profile from '../ui-components/Profile';
 interface ListingPageProps {
-    location: string;
-    period: string;
-    numberOfGuests: number;
+    servicesFee: number;
+    isLoaded: boolean;
+    API_KEY: string;
 }
 
-const ListingPage: React.FC<ListingPageProps> = () => {
+const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY}) => {
     const { id } = useParams();
 
     interface Location {
@@ -78,6 +78,9 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         speaksLanguages: string[];
         profilePhoto: string;
         createdAt : string;
+        averageRating: number;
+        bio: string;
+        gender: string;
         
     }
 
@@ -88,6 +91,7 @@ const ListingPage: React.FC<ListingPageProps> = () => {
     }
 
     interface Review {
+        author: User;
         description: string;
         numberOfStars: number;
         cleanliness: number;
@@ -96,7 +100,7 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         location: number;
         checkIn: number;
         value: number;
-        user: User;
+        receiverId: number;
         createdAt : string
     }
 
@@ -121,9 +125,11 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         numberOfBeds: number;
         numberOfBedrooms: number;
         numberOfReviews: number;
+        numberOfBathrooms: number;
         secondaryTitle: string;
         typeOfListing: string;
         amenities: Amenity[]
+        cleaningFee: number;
     }
 
     const [listing, setListing] = useState<Listing | null>(null);
@@ -144,6 +150,35 @@ const ListingPage: React.FC<ListingPageProps> = () => {
     const [precisionRating, setPrecisionRating] = useState<number>(0);
     const [expandedReviewIndex , setExpandedReviewIndex] = useState<number>(-1);
     const [showAllReviews, setShowAllReviews] = useState<boolean>(false);
+    const [gostiReservation, setGostiReservation] = useState<number>(gosti);
+    const [gostiActive, setGostiActive] = useState(false);
+    const whoFieldRef = useRef<HTMLDivElement>(null);
+    const [reservationDolazak, setReservationDolazak] = useState<string>(dolazak);
+    const [reservationOdlazak, setReservationOdlazak] = useState<string>(odlazak);
+    const [reservationNights, setReservationNights] = useState<number>(1);
+    const [totalNightsCost, setTotalNightsCost] = useState<number>(0);
+    const [totalCleaningFeeCost, setTotalCleaningFeeCost] = useState<number>(0);
+    const [totalServicesFeeCost, setTotalServicesFeeCost] = useState<number>(0);
+    const center = {lat: listing?.location.latitude, lng: listing?.location.longitude};
+    const [map, setMap] = useState(null);
+    
+    useEffect(() => {
+        setTotalNightsCost(listing?.price * reservationNights) 
+        setTotalCleaningFeeCost(listing?.price * listing?.cleaningFee);
+        setTotalServicesFeeCost(listing?.price * servicesFee);
+    }, [reservationDolazak, reservationOdlazak, listing?.price, listing?.cleaningFee, servicesFee]);
+
+    const tkoKategorije = [
+        {item : 'Gosti', value: gostiReservation}
+    ];
+
+
+    const handleGostiActive = () => {
+        setGostiActive(!gostiActive);
+    };
+
+
+
     const calculateStarReview = (rating: number) => {
         const starsArray = [];
         const fullStars = Math.floor(rating);
@@ -268,8 +303,19 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                 setLoading(false);
             }
         };
-        fetchListing();
+        const fetchLocation = async () => {
+            try {
+                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing?.location.address)}&key=${API_KEY}`);
+                const data = await response.json();
+                console.log("Location data: ", data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
         
+        fetchListing();
+        fetchLocation();
     }, [id, dolazak, odlazak, gosti, handleListingFilterChange]);
 
     const calculateTimePassed = (date: string) => {
@@ -313,17 +359,39 @@ const ListingPage: React.FC<ListingPageProps> = () => {
         setShowAllReviews(!showAllReviews);
     };
 
+    const handleReservationDolazakChange = (date: any, dateString: string) => {
+        setReservationDolazak(dateString);
+        const dolazakDate = dayjs(dateString, 'DD-MM-YYYY');
+        const odlazakDate = dayjs(reservationOdlazak, 'DD-MM-YYYY');
+        const nights = odlazakDate.diff(dolazakDate, 'day');
+        setReservationNights(nights);
+    };
+
+    const handleReservationOdlazakChange = (date: any, dateString: string) => {
+        setReservationOdlazak(dateString);
+        const dolazakDate = dayjs(reservationDolazak, 'DD-MM-YYYY');
+        const odlazakDate = dayjs(dateString, 'DD-MM-YYYY');
+        const nights = odlazakDate.diff(dolazakDate, 'day');
+        setReservationNights(nights);
+    };
+
+
+    
 
 
 
    
 
     return (
-        <section className={`listing-section mt-6  ${darkScreen ? 'bg-black' : ''} ${showPhotos ? 'pr-0 pl-0 ' : 'pr-40 pl-40'}`}>
+        <section className={`listing-section mt-6  ${darkScreen ? 'bg-black' : ''} ${showPhotos ? 'pr-0 pl-0 ' : 'pr-40 pl-40 md:pr-20 md:pl-20 sm:pr-10 sm:pl-10'}`}>
             {loading ? (<Spinner loading={loading} />) : (
-                <div className={`${showPhotos ? ' flex items-center  justify-center' : ''}`}>
+                <div className={`${showPhotos ? ' flex items-center  justify-center' : ''} `}>
                      {showAllReviews && <div className="fixed inset-0 bg-black opacity-50"></div>}
-                     <div className={`${showPhotos ? 'hidden' : 'listing-container'} `}>
+                     <div className={`${showPhotos ? 'hidden' : 'listing-container flex flex-col flex-wrap'} `}>
+
+                       
+
+                        
                         <div className='title-container flex justify-between items-center'>
                             {listing && <h1 className='font-bold text-3xl'>{listing.title}</h1>}
                             <div className='like-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
@@ -346,17 +414,22 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                             </div>
                         
                     </div>
-                    <div className='main-description-container w-3/4 mt-4 border-b-2 pb-4'>
-                        <div className='description-left w-full'>
+                    <div className='flex w-full mt-6'>
+                    <div className='left w-3/4 h-fit'>
+                    <div className='main-description-container flex flex-col w-full mt-4  pb-4'>
+                        <div className='flex w-full'>
+                        <div className='description-left w-full h-full mr-2'>
                             {listing && <h2 className='font-bold text-2xl'>{listing.secondaryTitle}</h2>}
                             <div className='flex gap-2'>
                                 <p className='font-semibold'>{`${listing?.maxGuests} gostiju`}</p>
                                 <p className='text-black'>•</p>
                                 <p className='font-semibold'>{`${listing?.numberOfBedrooms} spavaćih soba`}</p>
                                 <p className='text-black'>•</p>
-                                <p className='font-semibold'>{`${listing?.numberOfBeds} kreveta`}</p>   
+                                <p className='font-semibold'>{`${listing?.numberOfBeds} kreveta`}</p>  
+                                <p className='text-black'>•</p> 
+                                <p className='font-semibold'>{`${listing?.numberOfBathrooms} kupatila`}</p> 
                             </div>
-                            <div className='host-container p-4  w-full flex-col items-center  mt-4'>
+                            <div className='host-container p-4 border-b-2 w-full flex-col items-center  mt-4'>
                                 <div className='flex ribbon-container border-2 h-24  items-center justify-center  '>
                                     <img className='mr-4  xl:h-3/4  md:w-1/4 2xl:w-1/5 ' src={guestFavorite} alt="guest favorite" />
                                     <div className='flex w-2/4 items-center justify-center '>
@@ -392,11 +465,7 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                                     
                                 </div>  
                             </div>
-                        </div>
-                       
-                             
-                    </div>
-                    <div className='amenities-container mt-8 border-b-2 w-3/4'>
+                            <div className='amenities-container mt-8 border-b-2 w-full'>
                                 {listing?.amenities
                                     .filter(amenity => mainAmenities.includes(amenity.icon))
                                     .map((amenity, index) => (
@@ -408,6 +477,7 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                                                 {amenity.icon === '<FaRegCalendarCheck />' && <FaRegCalendarCheck className='w-6 h-6 mr-8' />}
                                                 {amenity.icon === '<PiDoorBold />' && <PiDoorBold className='w-6 h-6 mr-8' />}
                                                 {amenity.icon === '<FaParking />' && <FaParking className='w-6 h-6 mr-8' />}
+                                                {amenity.icon === '<GiAtSea />' && <FaParking className='w-6 h-6 mr-8' />}
                                                 <p className='font-semibold'>{amenity.description}</p>
                                             </div>
                                             <p className='text-sm text-slate-400 ml-14'>
@@ -417,16 +487,27 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                                                 {amenity.description === 'Besplatan parking' && 'Besplatan parking na lokaciji.'}
                                                 {amenity.description === 'Pogled na planine' && 'Imati čete prekrasan pogled na planine iz topline vašega doma.'}
                                                 {amenity.description === 'Dijeljenje stana' && 'Ovaj dom dijeliti ćete sa drugim gostima.'}
+                                                {amenity.description === 'Pogled na more' && 'Imati čete prekrasan pogled na more iz topline vašega doma.'}
+                                                {amenity.description === 'Pogled na jezero' && 'Imati čete prekrasan pogled na jezero iz topline vašega doma.'}
+
                                             </p>
                                         </div>
                                     ))}
-                            </div>
-                    <div className='description-container mt-8 pb-8 border-b-2 w-3/4'>
+                            </div>  
+                        </div>
+                        
+                        </div>
+                        
+                       
+                               
+                    </div>
+                    
+                    <div className='description-container pb-8 border-b-2 w-full'>
                         <p className='font-semibold'>
                             {listing?.description}
                         </p>
                     </div>
-                    <div className='bedroom-container mt-8 border-b-2 w-3/4'>
+                    <div className='bedroom-container mt-8 border-b-2 w-full'>
                         <h1 className='text-3xl font-semibold'>Gdje ćete spavati</h1>
                         <div className='bedroom-info-container flex gap-4 mt-4'>
                             {listing?.photos.map((photo, index) => (
@@ -439,9 +520,9 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                             ))}
                     </div>
                 </div>
-                <div className='offers-container mt-8 border-b-2 w-3/4'>
+                <div className='offers-container mt-8  w-full'>
                         <h1 className='text-2xl font-bold '>Što ovaj smještaj nudi</h1>
-                        <div className='grid grid-cols-2 p-8'>
+                        <div className='grid grid-cols-2 '>
                             {listing?.amenities.map((amenity, index) => (
                                 <div className='amenity-container flex gap-2 mt-4' key={index}>
                                     {amenity.icon === '<FaWifi />' && <FaWifi className='w-6 h-6 mr-8' />}
@@ -473,18 +554,130 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                             ))}
                         </div>
                     </div>
+                    </div>
+                    <div className='sticky-container w-1/4  relative mb-4 '>
+                    <div className='reservation-container z-40 sticky top-0  shadow-2xl flex flex-col w-3/4 h-fit bg-white p-4 border-2 border-gray-200 rounded-lg'>
+                            <div>
+                                <p className='font-semibold text-2xl'>€ {listing?.price} <span className='font-normal'>noćenje</span></p>
+                            </div>
+                            <div className='reservation-filter-container flex flex-col mt-4 border-2 border-zinc-500 rounded-lg pb-2 active:border-black'>
+                                  <div className='dolazak-odlazak flex justify-center items-center gap-2'>
+                                        <Space  direction="horizontal" className='w-full flex justify-center items-center' size={12}>
+                                            <div className='p-2 pb-0 flex flex-col justify-center items-center border-e-2   w-full h-full '>
+                                                <p className='font-bold w-full text-sm text-left'>Dolazak </p>
+                                                <DatePicker format={{                                         
+                                                      format: 'DD-MM-YYYY',
+                                                      type: 'mask',
+                                                    }} variant='borderless' 
+                                                    value={dayjs(dolazak, 'DD-MM-YYYY')}  
+                                                    defaultValue={dayjs(dolazak, 'DD-MM-YYYY')} 
+                                                    className='w-full font-semibold' 
+                                                    picker="date" 
+                                                    placeholder='Dolazak'
+                                                    size='large' 
+                                                    onChange={handleReservationDolazakChange}
+                                                    
+                                                    />
+                                                    
+                                            </div>
+                                            
+                                            <div className='p-2 pb-0 flex flex-col justify-center items-center w-full h-full '>
+                                            <p className='font-bold w-full text-sm text-left'>Odlazak </p>
+                                                <DatePicker format={{                                         
+                                                      format: 'DD-MM-YYYY',
+                                                      type: 'mask',
+                                                    }} variant='borderless' 
+                                                    value={dayjs(odlazak, 'DD-MM-YYYY')}  
+                                                    defaultValue={dayjs(odlazak, 'DD-MM-YYYY')} 
+                                                    className='w-full font-semibold' 
+                                                    picker="date" 
+                                                    placeholder='Odlazak'
+                                                    size='large' 
+                                                    onChange={handleReservationOdlazakChange}
+                                                    />
+                                                    
+                                            </div>
+                                        </Space>
+                                    </div>  
+                                    <div className='gosti w-full relative flex justify-center items-center border-t-2 pb-2 pt-2'>
+                                        <div  onClick={() => {handleGostiActive()}} className='input-field w-full pl-7 flex  hover:cursor-pointer '>
+                                            <div className='Flex flex-col'>
+                                                <label htmlFor="default-input-3" className="block pl-2 text-sm font-bold text-gray-900  align-bottom">Gosti</label>
+                                                <p className="outline-none 2xl:text-md rounded-3xl border-gray-300 text-gray-900 font-semibold  p-2">
+                                                    {`${gostiReservation === 1 ? 'Unesi broj gostiju' : `Odabrali ste: ${gostiReservation} gostiju`}`}
+                                                </p>
+                                            </div>
+                                            <div>
+
+                                                <MdOutlineKeyboardArrowDown className={`${gostiActive? 'hidden' : 'absolute right-2 top-2 text-2xl'} `} />
+                                                <MdOutlineKeyboardArrowUp className={`${gostiActive? 'absolute right-2 top-2 text-2xl' : 'hidden'} `} />
+                                            </div>
+                                        </div>
+                                        <div ref={whoFieldRef}  className={`${(gostiActive) ? 'who-container absolute top-full bg-white shadow-sm z-10 flex flex-col gap-2 p-4' : 'hidden'}`}>
+                                       
+                                            <div className='grid grid-cols-3'>
+                                                {tkoKategorije.map((item, index) => {
+                                                        return (
+                                                            <AddRemove key={index} index={index} item={item}  handleMinus={() => handleGostiMinus(gostiReservation, setGostiReservation)} handleAdd={() => handleGostiPlus(gostiReservation, setGostiReservation)} />
+                                                        );
+                                                    })}
+                                            </div>
+                                        </div>  
+                                    </div>            
+                            </div>
+                            <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
+                                <button className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg '>Rezerviraj</button>
+                                <p className='mt-2'>Još vam nećemo ništa naplatiti</p>
+                            </div>
+                            <div className='flex flex-col items-center justify-center cost-container mt-4 border-b-2 pb-4'>
+                                <div className='flex justify-between w-full mt-2 '>
+                                     <p className='underline '>{`€${listing?.price} X ${reservationNights} noćenja`}</p>
+                                     <p>{`€${totalNightsCost}`}</p>               
+                                </div>
+                                <div className='flex justify-between w-full mt-2 '>
+                                     <p className='underline '>Naknada za čišćenje</p>
+                                     <p>{`€${totalCleaningFeeCost}`}</p>               
+                                </div>
+                                <div className='flex justify-between w-full mt-2 '>
+                                <p className='underline '>Naknada za usluge</p>
+                                <p>{`€${totalServicesFeeCost}`}</p>             
+                                </div>
+                            </div>
+                            <div className='total-cost-container flex justify-between w-full mt-4 mb-4'>
+                                <p>
+                                    <span className='font-bold'>Ukupno</span> (sa PDV-om)
+                                </p>
+                                <p>{`€${totalNightsCost + totalCleaningFeeCost + totalServicesFeeCost}`}</p>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                    <div className='bottom mt-8 border-t-2'>
+                        <div className='w-full big-rating-container mt-8 pt-8 flex flex-col items-center justify-center'>
+                            <div className='flex items-center justify-center gap-2'>
+                                  <img src={leftVijenac} alt="vijenac" />
+                                  <h1 className='h-full text-8xl'>{listing?.rating}</h1>
+                                  <img src={rightVijenac} alt="vijenac" />                  
+                            </div>
+                            <div>
+                                <h2 className='text-2xl font-bold'>Odabrali gosti</h2>
+                            </div>
+                        </div>
                     <ListingRatings direction='flex' rating={listing?.rating} numberOfReviews={listing?.numberOfReviews} reviewPercentageList={reviewPercentageList} cleanliness={cleanliness} 
                         precisionRating={precisionRating} checkInRating={checkInRating} locationRating={locationRating} 
                         communicationRating={communication} valueRating={valueRating} />
-                    <div className='reviews-container mt-8 border-b-2 pb-8 w-3/4'>
-                        <div className='flex flex-wrap '>
+                    <div className='reviews-container mt-8 border-b-2 pb-8 w-full'>
+                        <div className='flex flex-wrap justify-center items-center '>
                             {listing?.reviews.map((review, index) => (
-                                <div className='review-container flex-col  w-1/3 h-1/2 mb-10 p-6'>
+                                <div className='review-container flex-col  w-full h-1/2 mb-10 p-6'>
                                     <div className='flex items-center gap-2'>
                                         <img className='w-10 h-10 rounded-full' src={userIcon} alt="user icon" />
                                         <div className='flex-col gap-1 ml-3'>
-                                            <p className='font-semibold'>{review?.user.firstName}</p>
-                                            <p >Na airbnbu je {calculateTimePassed(review?.user.createdAt)}</p>
+                                            <p className='font-semibold'>{review?.author.firstName}</p>
+                                            <p >Na airbnbu je {calculateTimePassed(review?.author.createdAt)}</p>
                                         </div>
                                     </div>
                                     <div className='flex gap-1 items-center mt-2'>
@@ -511,6 +704,31 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                             <button onClick={handleShowAllReviews} className='text-base gap-1 mt-4 p-1 text-center border-black  hover:bg-slate-50 hover:shadow-lg border-2 rounded-3xl w-40 h-12'>{`Prikaži ${listing?.numberOfReviews} recenzije`}</button>
                         </div>
                     </div>
+                    <div className='location-container  mt-8 w-full'>
+                        <div className='flex flex-col gap-2 p-4'>
+                            <h1 className='text-2xl font-bold'>Gdje ćete biti</h1>
+                            <p>{`${listing?.location.address}, ${listing?.location.city}, ${listing?.location.country}`}</p>
+                        </div>
+                       
+                        <div className='map-container flex justify-center items-center w-full mt-4 p-4'>
+                            {isLoaded && (
+                                <GoogleMap
+                                    mapContainerStyle={{ width: '100%', height: '40rem' }}
+                                    zoom={15}
+                                    center={center}
+                                    onLoad={map => setMap(map)}
+                                    
+                                >
+                                <Marker position={center} />  
+                                </GoogleMap>
+                            )}
+                        </div>  
+                    </div>
+                        <div className='meet-your-host-container mt-8 w-full'>
+                            <Profile user={listing?.user} listingPage={true} yearsHosting = {yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
+                        </div>  
+                    </div>
+                    
                 </div>
                 {showPhotos && <Photos onShowPhotosChange={handleShowPhotos} onDarkScreenChange={handleDarkScreenChange} photos={listing?.photos || []} />}
                 {showAllReviews && (
@@ -532,8 +750,8 @@ const ListingPage: React.FC<ListingPageProps> = () => {
                                     <div className='flex items-center gap-2'>
                                         <img className='w-10 h-10 rounded-full' src={userIcon} alt="user icon" />
                                         <div className='flex-col gap-1 ml-3'>
-                                            <p className='font-semibold'>{review?.user.firstName}</p>
-                                            <p>Na airbnbu je {calculateTimePassed(review?.user.createdAt)}</p>
+                                            <p className='font-semibold'>{review?.author.firstName}</p>
+                                            <p>Na airbnbu je {calculateTimePassed(review?.author.createdAt)}</p>
                                         </div>
                                     </div>
                                     <div className='flex gap-1 items-center mt-2'>

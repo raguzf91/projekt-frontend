@@ -6,9 +6,12 @@ import Filters from "../ui-components/Filters";
 import { CSSTransition } from 'react-transition-group';
 import { SearchParamsProvider } from '../context/SearchParamsContext';
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
-
+import FooterMenu from "../ui-components/FooterMenu";
 const MainLayout = () => {
-    const { setBrojNocenja, handleShowSmallScFilter, brojNocenja, regija, dolazak, odlazak, gosti, showFilterSmallSc, setShowFilterSmallSc, location, period, handleListingFilterChange } = useNavbarFilter();
+    const { setBrojNocenja, handleShowSmallScFilter,  gosti, showFilterSmallSc } = useNavbarFilter();
+    
+
+
 
     return (
         <SearchParamsProvider>
@@ -30,6 +33,7 @@ const MainLayout = () => {
                 numberOfGuests={gosti}
             />
             <Outlet />
+            <FooterMenu/>
             <ToastContainer />
         </SearchParamsProvider>
     );

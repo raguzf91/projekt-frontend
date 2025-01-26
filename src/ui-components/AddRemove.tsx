@@ -10,8 +10,7 @@ interface AddRemoveProps {
 
 const AddRemove: React.FC<AddRemoveProps> = ({ index, item, handleMinus, handleAdd }) => {
     return (
-         <div key={index} className="flex justify-between gap-2 items-center ml-4 mr-4">
-            <p className="text-lg font-semibold">{item.item}</p>
+         <div key={index} className="flex flex-col justify-between gap-2 items-center ml-4 mr-4">
             <div className="flex gap-4 justify-center items-center">
                 <CiCircleMinus onClick={() => handleMinus(index)} className={`w-8 h-8 cursor-pointer ${item.value === 0 ? 'text-gray-400 cursor-not-allowed' : 'hover:border-2 hover:border-slate-950'}`} />
                 <p className="text-lg">{item.value}</p>

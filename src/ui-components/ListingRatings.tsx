@@ -10,7 +10,6 @@ import { IoPricetagOutline } from "react-icons/io5";
 
 
 
-
 interface ListingRatingsProps {
     rating: number | undefined;
     numberOfReviews: number | undefined;
@@ -50,20 +49,20 @@ const ListingRatings : React.FC<ListingRatingsProps> = ({rating, direction, numb
                                     </div>
                                     
                                 </Flex>
-                                <div className={`${direction === 'flex-col' ? 'flex w-full mt-4 border-b-2 p-2' : 'flex flex-col w-32 border-e-2'} justify-between   `}>
+                                <div className={`${direction === 'flex-col' ? 'flex w-full mt-4 border-b-2 p-2' : 'flex flex-col lg:w-32 md:w-16 border-e-2'} justify-between   `}>
                                     <div className={`${direction === 'flex-col' ? 'flex gap-2' : 'hidden'}`}>
                                         <PiSprayBottleBold className='w-8 h-8' />
                                         <p className='text-lg font-semibold'>Čistoća</p>
                                     </div>
                                     <p className={`${direction === 'flex-col' ? 'text-xl font-semibold' : 'hidden'} `}>{cleanliness.toFixed(2)}</p>
-                                    <div className={`${direction === 'flex-col' ? 'hidden' : 'flex flex-col '} justify-between w-32 border-e-2 `}>
+                                    <div className={`${direction === 'flex-col' ? 'hidden' : 'flex flex-col '} justify-between lg:w-32 md:w-24 border-e-2 `}>
                                         <p className='text-lg font-semibold'>Čistoća</p>
                                         <p className='text-xl font-semibold'>{cleanliness.toFixed(2)}</p>
                                     </div>
                                    
                                     <PiSprayBottleBold className={`${direction === 'flex-col' ? 'hidden' : 'w-8 h-8'}`} />
                                 </div>
-                                <div className={`${direction === 'flex-col' ? 'flex w-full mt-4 border-b-2 p-2' : 'flex flex-col w-32 border-e-2'} justify-between`}>
+                                <div className={`${direction === 'flex-col' ? 'flex w-full mt-4 border-b-2 p-2' : 'flex flex-col lg:w-32 md:w-16 border-e-2'} justify-between`}>
             <div className={`${direction === 'flex-col' ? 'flex gap-2' : 'hidden'}`}>
                 <SiTicktick className='w-8 h-8' />
                 <p className='text-lg font-semibold'>Preciznost</p>
