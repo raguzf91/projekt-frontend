@@ -1,5 +1,8 @@
 import { FcGoogle } from "react-icons/fc";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useUser } from '../context/UserContext';
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 interface toggleProps {
     toggleLogin: () => void
@@ -8,6 +11,61 @@ interface toggleProps {
 const Login = ({toggleLogin}:toggleProps) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loginRequest, setLoginRequest] = useState({
+        email: '',
+        password: ''
+    });
+    const { setUser } = useUser();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+
+        setLoginRequest({
+            email: email,
+            password: password
+        });
+    }, [email, password]);
+
+    const handleNavigateToVerifyAccount = ( verificationType : string ) => {
+        console.log('navigating to verify account' + verificationType);
+        toggleLogin();
+        navigate(`/verify-account?verificationType=${verificationType}&email=${email}`);
+    };
+
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            console.log(loginRequest);
+            try {
+                
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginRequest)
+                });
+    
+               
+                if (response.ok) {
+                    const data = await response.json();
+                    const user = data.data.user;
+                    const verificationTypeRef = data.data.activationType;
+                    const {id, email, roleName} = user;
+                    // Update user context
+                    setUser({ id: id, email: email, role: roleName });
+                    toast.info('Uspješno ste se prijavili');
+                    handleNavigateToVerifyAccount(verificationTypeRef);
+                } else {
+                    console.error('Registration failed:', response.statusText);
+                }
+    
+            } catch (error) {
+                toast.error('Greška prilikom registracije');
+                console.error(error);
+                
+            }
+        };
     
     return (
         <div id="authentication-modal" aria-hidden="true" className="fixed inset-0 z-50 mt-36 flex items-center  justify-center overflow-y-auto overflow-x-hidden h-full ">
@@ -31,7 +89,7 @@ const Login = ({toggleLogin}:toggleProps) => {
                         <div className="welcome font-bold text-2xl mb-6">
                             <h2>Dobrodošli u projekt</h2>
                         </div>
-                        <form className="space-y-4" action="#">
+                        <form className="space-y-4" action="#" onSubmit={handleSubmit}>
                            
                             <div>
                                 <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
@@ -44,13 +102,13 @@ const Login = ({toggleLogin}:toggleProps) => {
                             <div className="flex justify-between">
                                 <div className="flex items-start">
                                     <div className="flex items-center h-5">
-                                        <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-red-300 dark:bg-gray-600 dark:border-gray-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" required />
+                                        <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-red-300 dark:bg-gray-600 dark:border-gray-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"  />
                                     </div>
                                     <label htmlFor="remember" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Zapamti me</label>
                                 </div>
                                 <a href="#" className="text-sm text-red-700 hover:underline dark:text-red-500">Zaboravljena lozinka?</a>
                             </div>
-                            <button type="submit" className="w-full text-white bg-rose-700 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">Registrirajte se</button>
+                            <button type="submit" className="w-full text-white bg-rose-700 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">Prijavite se</button>
                             <div className="ili "  >
                                 <p className="text-center">ili</p>
                             </div>

@@ -51,11 +51,13 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const [odlazakRef, setOdlazakRef] = useState(odlazak);
     const navbarRef = useRef<HTMLDivElement>(null);
     const datepickerRef = useRef<HTMLDivElement>(null);
-    const [hideNavbar, setHideNavbar] = useState(false);
+    
 
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
-
+    const activateLogin = searchParams.get('activateLogin');
+    const hideNavbar = searchParams.get('hideNavbar');
+    
     const handleClickOutside = (event: MouseEvent) => {
         if (
             navbarRef.current && !navbarRef.current.contains(event.target as Node) &&
@@ -72,6 +74,12 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    useEffect(() => {
+        if (activateLogin === 'true') {
+            setLoginVisible(true);
+        }
+    }, [activateLogin]);
 
     
 
@@ -247,7 +255,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
 
     const handleHideNavbar = (hide: boolean) => {
         console.log("hide: "+hide);
-        setHideNavbar(hide);
+
     };
 
     
@@ -261,7 +269,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
             <nav className='navbar'>
-                <div className={`navbar-container ${verificationType === 'ACTIVATE_ACCOUNT' ? 'hidden' : 'flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'}`}>
+                <div className={`navbar-container ${(verificationType === 'ACTIVATE_ACCOUNT ' || verificationType === 'VERIFY_ACCOUNT' || hideNavbar === 'true' ) ? 'hidden' : 'flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'}`}>
                    
                     <div className='upper-navbar w-full flex justify-between items-center '>
                         <img onClick={handleNavigateToHome} src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer ' />

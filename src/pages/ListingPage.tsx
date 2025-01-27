@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef} from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Spinner from '../ui-components/Spinner';
 import { useSearchParamsContext } from '../context/SearchParamsContext';
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
@@ -307,6 +307,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
             try {
                 const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing?.location.address)}&key=${API_KEY}`);
                 const data = await response.json();
+                console.log(data)
                 console.log("Location data: ", data);
             } catch (error) {
                 console.error(error);
@@ -362,6 +363,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const handleReservationDolazakChange = (date: any, dateString: string) => {
         setReservationDolazak(dateString);
         const dolazakDate = dayjs(dateString, 'DD-MM-YYYY');
+        console.log(dateString);
         const odlazakDate = dayjs(reservationOdlazak, 'DD-MM-YYYY');
         const nights = odlazakDate.diff(dolazakDate, 'day');
         setReservationNights(nights);
@@ -369,10 +371,17 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
 
     const handleReservationOdlazakChange = (date: any, dateString: string) => {
         setReservationOdlazak(dateString);
+        console.log(dateString);
         const dolazakDate = dayjs(reservationDolazak, 'DD-MM-YYYY');
         const odlazakDate = dayjs(dateString, 'DD-MM-YYYY');
         const nights = odlazakDate.diff(dolazakDate, 'day');
         setReservationNights(nights);
+    };
+
+    const navigate = useNavigate();
+
+    const handleNavigateToBookingPage = () => {
+        navigate(`/booking?hideNavbar=${true}&dolazak=${reservationDolazak}&odlazak=${reservationOdlazak}&gosti=${gostiReservation}&listingId=${listing?.id}&totalNightsCost=${totalNightsCost}&totalCleaningFeeCost=${totalCleaningFeeCost}&totalServicesFeeCost=${totalServicesFeeCost}`);
     };
 
 
@@ -569,7 +578,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                                       format: 'DD-MM-YYYY',
                                                       type: 'mask',
                                                     }} variant='borderless' 
-                                                    value={dayjs(dolazak, 'DD-MM-YYYY')}  
+                                                    value={dayjs(reservationDolazak, 'DD-MM-YYYY')}  
                                                     defaultValue={dayjs(dolazak, 'DD-MM-YYYY')} 
                                                     className='w-full font-semibold' 
                                                     picker="date" 
@@ -587,7 +596,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                                       format: 'DD-MM-YYYY',
                                                       type: 'mask',
                                                     }} variant='borderless' 
-                                                    value={dayjs(odlazak, 'DD-MM-YYYY')}  
+                                                    value={dayjs(reservationOdlazak, 'DD-MM-YYYY')}  
                                                     defaultValue={dayjs(odlazak, 'DD-MM-YYYY')} 
                                                     className='w-full font-semibold' 
                                                     picker="date" 
@@ -626,7 +635,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                     </div>            
                             </div>
                             <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
-                                <button className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg '>Rezerviraj</button>
+                                <button onClick={handleNavigateToBookingPage} className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg '>Rezerviraj</button>
                                 <p className='mt-2'>Još vam nećemo ništa naplatiti</p>
                             </div>
                             <div className='flex flex-col items-center justify-center cost-container mt-4 border-b-2 pb-4'>

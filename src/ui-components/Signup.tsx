@@ -22,7 +22,7 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
         console.log('navigating to verify account' + verificationType);
         toggleRegister();
         handleHideNavbar(true);
-        navigate(`/verify-account?verificationType=${verificationType}`);
+        navigate(`/verify-account?verificationType=${verificationType}&email=${email}`);
     };
     
     const [registerRequest, setRegisterRequest] = useState({
@@ -57,6 +57,7 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        console.log(registerRequest);
         try {
             
             const response = await fetch('http://localhost:8080/api/auth/register', {
@@ -71,11 +72,8 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
             if (response.ok) {
                 const data = await response.json();
                 const user = data.data.user;
-                console.log(data);
                 const verificationTypeRef = data.data.activationType;
-                console.log("type" +verificationTypeRef);
                 const {id, email, roleName} = user;
-                console.log(id, email, roleName);
                 // Update user context
                 setUser({ id: id, email: email, role: roleName });
                 toast.success('Uspješno ste se registrirali');
@@ -100,10 +98,8 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
                 {/* Modal content */}
                 <div className="abssolute top-0 bg-white rounded-lg shadow dark:bg-gray-700">
                     {/* Modal header */}
-                    <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Registrirajte se
-                        </h3>
+                    <div className="flex items-center justify-between p-1 md:p-1 border-b rounded-t dark:border-gray-600">
+                        
                         <button type="button" onClick={toggleRegister} className="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="authentication-modal">
                             <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
@@ -144,11 +140,11 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
                             <div>
                             <label htmlFor="gender" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Spol</label>
                                 <div className="flex items-center mb-4">
-                                    <input type="radio" id="male" name="gender" value="male" checked={gender === 'male'} onChange={(e) => setGender('male')} className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-300 focus:ring-gray-900 dark:focus:ring-gray-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    <input type="radio" id="male" name="gender" value="male" checked={gender === 'male'} onChange={(e) => setGender(e.target.value)} className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-300 focus:ring-gray-900 dark:focus:ring-gray-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                     <label htmlFor="male" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Muško</label>
                                 </div>
                                 <div className="flex items-center mb-4">
-                                    <input type="radio" id="female" name="gender" value="female" checked={gender === 'female'} onChange={(e) => setGender('female')} className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-300 focus:ring-gray-900 dark:focus:ring-gray-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                    <input type="radio" id="female" name="gender" value="female" checked={gender === 'female'} onChange={(e) => setGender(e.target.value)} className="w-4 h-4 text-gray-900 bg-gray-100 border-gray-300 focus:ring-gray-900 dark:focus:ring-gray-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                     <label htmlFor="female" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">Žensko</label>
                                 </div>
                             </div>
