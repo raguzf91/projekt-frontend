@@ -12,6 +12,31 @@ import { Autocomplete, StandaloneSearchBox } from '@react-google-maps/api';
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { CiCircleMinus, CiCirclePlus } from "react-icons/ci";
+import { LuHeart } from "react-icons/lu";
+import { BsGrid3X3GapFill } from "react-icons/bs";
+import { FaWifi } from "react-icons/fa";
+import { TbToolsKitchen } from "react-icons/tb";
+import { FaRegSnowflake } from "react-icons/fa";
+import { FaTv } from "react-icons/fa";
+import { LuWashingMachine } from "react-icons/lu";
+import { BiSolidDryer } from "react-icons/bi";
+import { TbTemperatureSun } from "react-icons/tb";
+import { PiCity } from "react-icons/pi";
+import { FaUmbrellaBeach } from "react-icons/fa";
+import { FaSkiing } from "react-icons/fa";
+import { PiMountains } from "react-icons/pi";
+import { FaRegCalendarCheck } from "react-icons/fa";
+import { PiDoorBold } from "react-icons/pi"; 
+import { MdOutlineBathtub } from "react-icons/md";
+import { PiSecurityCameraFill } from "react-icons/pi";
+import { FaParking } from "react-icons/fa";
+import { PiHairDryerBold } from "react-icons/pi";
+import { MdOutlineFireplace } from "react-icons/md";
+import { TbAlarmSmoke } from "react-icons/tb";
+import { PiWashingMachineBold } from "react-icons/pi";
+import { MdOutlinePets } from "react-icons/md";
+import { GiAtSea } from "react-icons/gi";
+
 
 
 interface CreateListingProps {
@@ -27,7 +52,12 @@ interface ListingAddress {
     postalCode: string;
 }
 
+interface ListingAmenities {
+    id: number;
+    description: string;
+    icon: string;
 
+};
 
 const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) => {
     const { setHideNavbar} = useNavbarFilter();
@@ -43,6 +73,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
     const [postalCode, setPostalCode] = useState('');
     const center = React.useMemo(() => ({ lat: 45.346241, lng: 19.008960 }), []);
     const [addressAccepted, setAddressAccepted] = useState(false);
+    
     const listingAddress: ListingAddress = {
         streetNumber: '',
         street: '',
@@ -84,6 +115,8 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
         setTypeOfListing(e.target.innerText);
         console.log(typeOfListing);
     };
+
+    const [allAmenities, setAllAmenities] = useState<ListingAmenities[]>([]);
     
     useEffect(() => {
 
@@ -110,8 +143,29 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                 console.error(error);
             }
         };
+
+        const fetchAmenities = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/amenity/all`);
+                const data = await response.json();
+
+                if(response.ok) {
+                    const amenities = data.data.amenities;
+                    console.log("Amenities: ", amenities);
+
+                    setAllAmenities(amenities);
+
+                }
+                
+                
+                
+            } catch (error) {
+                console.error(error);
+            }
+        };
         
        fetchLocation();
+       fetchAmenities();
 
     }, [fullAddress, API_KEY]);
 
@@ -239,6 +293,23 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
             
         };
 
+        const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+        const [selectedAmenitiesIndex, setSelectedAmenitiesIndex] = useState<string[]>([]);
+
+        const addToSelectedAmenities = (amenityDescription: string, index: number) => {
+            if(selectedAmenities.includes(amenityDescription)) {
+               return;
+            } else {
+                setSelectedAmenities([...selectedAmenities, amenityDescription]);
+                console.log(selectedAmenities);
+                setSelectedAmenitiesIndex([...selectedAmenitiesIndex, index.toString()]);
+            }
+    };
+        
+        
+
+
+        
     
         
     return (
@@ -394,6 +465,50 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                                             </div>
                                         </div>
                             </div>
+                            <div className="amenities flex flex-col w-full h-fit p-4 mt-24 border-b-2 pb-4">
+                                <h1 className="text-3xl font-semibold">Navedite osnovne informacije o smještaju</h1>
+                                {allAmenities.length !== 0 && (
+                                    <div className="sadržaji flex flex-wrap w-full items-center justify-center mt-6">
+                                        {allAmenities.map((amenity, index) => (
+                                            <React.Fragment key={index}>
+                                                {amenity.description !== 'Kuća' && amenity.description !== 'Stan' && amenity.description !== 'Dijeljenje stana' && (
+                                                    <div onClick={() => addToSelectedAmenities(amenity.description,index)} className={`sadržaj  flex mt-4  w-1/4 border-2 mr-6 h-24 ${selectedAmenitiesIndex.includes(index.toString()) ? 'border-red-500' : 'hover:border-black'} justify-center items-center p-2 cursor-pointer transition-all duration-150 `}>
+                                                        <div  className='flex items-center justify-center pl-2 '>
+                                                            {amenity.icon === '<MdOutlinePets />' && <MdOutlinePets className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<PiWashingMachineBold />' && <PiWashingMachineBold className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<TbAlarmSmoke />' && <TbAlarmSmoke className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<MdOutlineFireplace />' && <MdOutlineFireplace className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<PiHairDryerBold />' && <PiHairDryerBold className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaWifi />' && <FaWifi className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaRegSnowflake />' && <FaRegSnowflake className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaTv />' && <FaTv className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<LuWashingMachine />' && <LuWashingMachine className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<BiSolidDryer />' && <BiSolidDryer className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<TbTemperatureSun />' && <TbTemperatureSun className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<PiCity />' && <PiCity className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaUmbrellaBeach />' && <FaUmbrellaBeach className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaSkiing />' && <FaSkiing className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<PiMountains />' && <PiMountains className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaRegCalendarCheck />' && <FaRegCalendarCheck className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<PiDoorBold />' && <PiDoorBold className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<MdOutlineBathtub />' && <MdOutlineBathtub className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<PiSecurityCameraFill />' && <PiSecurityCameraFill className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<FaParking />' && <FaParking className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<GiAtSea />' && <GiAtSea className='w-6 h-6 mr-2' />}
+                                                            {amenity.icon === '<TbToolsKitchen />' && <TbToolsKitchen className='w-6 h-6 mr-2' />}
+
+                                                            <p className='text-base'>{amenity.description}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+
+                            </div>
 
                         </div>
                     </div>
@@ -401,6 +516,6 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                 </main>
             </section>
         </CSSTransition>
-    )
+    );
 };
 export default CreateListingPage;
