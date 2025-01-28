@@ -22,7 +22,7 @@ import dayjs from 'dayjs';
 import Search from './Search';
 import "./css/Navbar.css"
 import {toast} from 'react-toastify';
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
 import { Autocomplete } from '@react-google-maps/api';
 import { useSearchParamsContext } from '../context/SearchParamsContext';
@@ -51,12 +51,13 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const [odlazakRef, setOdlazakRef] = useState(odlazak);
     const navbarRef = useRef<HTMLDivElement>(null);
     const datepickerRef = useRef<HTMLDivElement>(null);
+    const { hideNavbar } = useNavbarFilter();
     
 
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
     const activateLogin = searchParams.get('activateLogin');
-    const hideNavbar = searchParams.get('hideNavbar');
+    
     
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -269,9 +270,9 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
             <nav className='navbar'>
-                <div className={`navbar-container ${(verificationType === 'ACTIVATE_ACCOUNT ' || verificationType === 'VERIFY_ACCOUNT' || hideNavbar === 'true' ) ? 'hidden' : 'flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'}`}>
+                <div className={`navbar-container ${(verificationType === 'ACTIVATE_ACCOUNT ' || verificationType === 'VERIFY_ACCOUNT' || hideNavbar === true ) ? 'hidden' : 'flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'}`}>
                    
-                    <div className='upper-navbar w-full flex justify-between items-center '>
+    className                <div className='upper-navbar w-full flex justify-between items-center '>
                         <img onClick={handleNavigateToHome} src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer ' />
                         {!ismdScreen && 
                             <div onClick={handleSearchActive} className={`not-active-navbar ${searchActive ? 'hidden' : 'flex justify-between items-center relative pl-6 xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border-2 hover:shadow-xl cursor-pointer w-1/3 2xl:w-1/2 h-12 ml-8 '}`}>
@@ -405,7 +406,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                         
                         <div className='right-navbar flex gap-3 mr-3 2xl:gap-4 2xl:mr-4'>
                             <div className='2xl:w-40 2xl:h-14 md:w-36 md:h-12 mr-6 hover:bg-gray-100 cursor-pointer rounded-xl flex items-center content-center justify-center'>
-                                <a className='upper-right-navbar-text text-md xl:text-lg font-semibold text-center'>Airbnb tvoj dom</a>
+                                <Link to="become-a-host" className='upper-right-navbar-text text-md xl:text-lg font-semibold text-center'>Airbnb tvoj dom</Link>
                             </div>
                             <div className='relative cursor-pointer flex gap-2 w-24 rounded-2xl hover:shadow-md justify-center items-center' onClick={toggleDropdown} ref={dropdownRef}>
                                 <IoMdMenu className=' 2xl:w-16 2xl:h-16  w-7 h-7' />

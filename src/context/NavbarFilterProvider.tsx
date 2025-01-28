@@ -13,6 +13,8 @@ interface NavbarFilterContextProps {
     location: string;
     period: string;
     handleShowSmallScFilter: (value: boolean) => void;
+    hideNavbar: boolean;
+    setHideNavbar: (value: boolean) => void;
 }
 
 const NavbarFilterContext = createContext<NavbarFilterContextProps | undefined>(undefined);
@@ -41,6 +43,7 @@ export const NavbarFilterProvider: React.FC<NavbarFilterProviderProps> = ({ chil
     const [gosti, setGosti] = useState<number>(1);
     const [showFilterSmallSc, setShowFilterSmallSc] = useState<boolean>(false);
     const [location, setLocation] = useState<string>('');
+    const [hideNavbar, setHideNavbar] = useState<boolean>(false);
    
 
     const handleShowSmallScFilter = (value: boolean) => {
@@ -92,7 +95,7 @@ export const NavbarFilterProvider: React.FC<NavbarFilterProviderProps> = ({ chil
     
 
     return (
-        <NavbarFilterContext.Provider value={{ brojNocenja, handleShowSmallScFilter, setBrojNocenja, regija, dolazak, odlazak, gosti, handleListingFilterChange, showFilterSmallSc, setShowFilterSmallSc, location, period }}>
+        <NavbarFilterContext.Provider value={{ brojNocenja, handleShowSmallScFilter, setBrojNocenja, regija, dolazak, odlazak, gosti, handleListingFilterChange, showFilterSmallSc, setShowFilterSmallSc, location, period, hideNavbar, setHideNavbar }}>
             {children}
         </NavbarFilterContext.Provider>
     );

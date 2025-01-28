@@ -1,10 +1,13 @@
 import { IoMdGlobe } from "react-icons/io";
 import { useSearchParamsContext } from '../context/SearchParamsContext';
+import { useNavbarFilter } from "../context/NavbarFilterProvider";
 const FooterMenu = () => {
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
+    const { hideNavbar } = useNavbarFilter();
+
     return (
-        <footer className={`${(verificationType === 'ACTIVATE_ACCOUNT' || verificationType === 'VERIFY_ACCOUNT') ? 'hidden' : 'footer bg-gray-100 flex p-10 pr-20 pl-20'}`}>
+        <footer className={`${(verificationType === 'ACTIVATE_ACCOUNT' || verificationType === 'VERIFY_ACCOUNT' || hideNavbar === true) ? 'hidden' : 'footer bg-gray-100 flex p-10 pr-20 pl-20'}`}>
             <div className="flex flex-col w-full">
                 <div className="flex">
                     <div className="flex flex-col ">
