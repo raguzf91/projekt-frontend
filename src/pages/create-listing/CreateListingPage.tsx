@@ -265,6 +265,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
 
         if((listingAddress.city && listingAddress.street && listingAddress.streetNumber && listingAddress.country && listingAddress.postalCode) !== "") {
             setFullAddress(`${listingAddress.street} ${listingAddress.streetNumber}, ${listingAddress.city}, ${listingAddress.country}, ${listingAddress.postalCode}`);
+            console.log();
         } else {
             toast.error("Molimo unesite ispravnu adresu");
             setStreetNumber('');
@@ -488,7 +489,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                     const data = await response.json();
                     const photoUrl = data.url;
                     const name = data.original_filename;
-                    return { photo_url: photoUrl, name: name };
+                    return { photoUrl: photoUrl, name: name };
                 });
             
                 try {
@@ -496,7 +497,11 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                     setUploadedPhotos(uploadedPhotos);
                     setLoading(false);
                 } catch (error) {
-                    toast.error(error.message);
+                    if (error instanceof Error) {
+                        toast.error(error.message);
+                    } else {
+                        toast.error('An unknown error occurred');
+                    }
                 }
             };
             
@@ -510,7 +515,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
             
 
             useEffect(() => {
-                const handleSendForm = () => {
+                const handleSendForm = async () => {
 
                     if(title === '' || description === '' || price === '' || cleaningFee === '' || fullAddress === '' || typeOfListing === '' || uploadedPhotos.length === 0 || selectedAmenities.length === 0 || fullLocation === undefined) {
                         toast.error("Molimo popunite sva polja");
@@ -535,14 +540,9 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                     listingData.append('longitude', lng.toString());
                     listingData.append('typeOfListing', typeOfListing);
     
-                        for(let i = 0; i < uploadedPhotos.length; i++) {
-                            photosData.append('photo_url', uploadedPhotos[i].photo_url);
-                            photosData.append('name', uploadedPhotos[i].name);
-                        }
-
-
-                    listingData.append('photos', JSON.stringify(uploadedPhotos));
-                
+                    uploadedPhotos.forEach((photo) => {
+                        listingData.append('photos', JSON.stringify(photo));
+                    });
                     listingData.append('amenities', JSON.stringify(selectedAmenities));
     
                     if(fullLocation !== undefined) {
@@ -553,6 +553,20 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                         console.log(`${key}: ${value}`);
                     }
                     
+                    
+
+                    const response = await fetch(`http://localhost:8080/api/listing/create`, {
+                        method: 'POST',
+                        body: listingData
+                    });
+                    if(response.ok) {
+                        console.log(response);
+                        toast.success("Uspješno ste dodali novi smještaj");
+                        navigate('/');
+                    } else {
+                        toast.error("Greška prilikom dodavanja smještaja");
+                        console.log(response);
+                    }
             };
 
                 if (uploadedPhotos.length !== 0) {
@@ -574,7 +588,9 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                 numberOfBedrooms,
                 numberOfBeds,
                 numberOfBathrooms,
-                refundable
+                refundable,
+                navigate
+                
             ]);
 
 
@@ -627,7 +643,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
         
     return (
         <>
-        {loading ? <Spinner /> : (
+        {loading ? <Spinner loading = {loading} /> : (
             <CSSTransition
             in={animate}
             timeout={300}

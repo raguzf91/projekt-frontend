@@ -68,7 +68,7 @@ const Login = ({toggleLogin}:toggleProps) => {
         };
     
     return (
-        <div id="authentication-modal" aria-hidden="true" className="fixed inset-0 z-50 mt-36 flex items-center  justify-center overflow-y-auto overflow-x-hidden h-full ">
+        <div id="authentication-modal" aria-hidden="true" className="fixed inset-0 z-50  flex items-center  justify-center overflow-y-auto overflow-x-hidden h-full ">
             <div className="relative mb-20 p-4 w-full max-w-md max-h-full h-3/4">
                 {/* Modal content */}
                 <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">

@@ -48,6 +48,9 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { MdOutlineKeyboardArrowUp } from "react-icons/md";
 import { GoogleMap, Marker } from '@react-google-maps/api'
 import Profile from '../ui-components/Profile';
+import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
+import { useUser } from '../context/UserContext';
 interface ListingPageProps {
     servicesFee: number;
     isLoaded: boolean;
@@ -60,8 +63,10 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     interface Location {
         city: string;
         country: string;
-        address: string;
-        zipcode: string;
+        street: string;
+        streetNumber: string;
+        fullAddress: string;
+        postalCode: string;
         latitude: number;
         longitude: number;
     }
@@ -120,7 +125,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
         rating: number;
         description: string;
         reviews: Review[];
-        category: string;
+        
         maxGuests: number;
         numberOfBeds: number;
         numberOfBedrooms: number;
@@ -159,9 +164,14 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const [totalNightsCost, setTotalNightsCost] = useState<number>(0);
     const [totalCleaningFeeCost, setTotalCleaningFeeCost] = useState<number>(0);
     const [totalServicesFeeCost, setTotalServicesFeeCost] = useState<number>(0);
-    const center = {lat: listing?.location.latitude, lng: listing?.location.longitude};
-    const [map, setMap] = useState(null);
-    
+    const [lat, setLat] = useState<number>(0);
+    const [long, setLng] = useState<number>(0);
+    const center = React.useMemo(() => ({ lat: 45.346241, lng: 19.008960 }), []);
+
+     const [map, setMap] = useState<google.maps.Map | null>(null);
+    const [secondaryTitle, setSecondaryTitle] = useState('');
+     const { user } = useUser();
+  
     useEffect(() => {
         setTotalNightsCost(listing?.price * reservationNights) 
         setTotalCleaningFeeCost(listing?.price * listing?.cleaningFee);
@@ -288,6 +298,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                 const { listingData } = data.data; // Extract listing from data
                 console.log("Listing data: ", listingData);
                 setListing(listingData);
+                setSecondaryTitle(`${listingData.typeOfListing} u ${listingData.location.city}, ${listingData.location.country}`);
                 if (listingData && !handleListingFilterChangeCalled.current) {
                     console.log("doslovno samo jednom treba da se pozove");
                     handleListingFilterChange(`${listingData.location.city}, ${listingData.location.country}`, dolazak, odlazak, gosti);
@@ -305,10 +316,19 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
         };
         const fetchLocation = async () => {
             try {
-                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing?.location.address)}&key=${API_KEY}`);
+                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing?.location.fullAddress)}&key=${API_KEY}`);
                 const data = await response.json();
                 console.log(data)
                 console.log("Location data: ", data);
+                center.lat = data.results[0].geometry.location.lat;
+                    center.lng = data.results[0].geometry.location.lng;
+                    setLat(center.lat);
+                    setLng(center.lng);
+                    if(map !== null) {
+                        map.panTo(center);
+
+                    }
+
             } catch (error) {
                 console.error(error);
             }
@@ -317,8 +337,13 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
         
         fetchListing();
         fetchLocation();
-    }, [id, dolazak, odlazak, gosti, handleListingFilterChange]);
-
+    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress]);
+    
+    useEffect(() => {
+        if (map && center) {
+            map.panTo(center);
+        }
+    }, [map, center]);
     const calculateTimePassed = (date: string) => {
         const createdAt = dayjs(date);
         const yearsPassed = dayjs().diff(createdAt, 'year');
@@ -381,6 +406,13 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const navigate = useNavigate();
 
     const handleNavigateToBookingPage = () => {
+         const accessToken = Cookies.get('access_token');
+                if(user && accessToken) {
+                    navigate('/become-a-host/create-listing');
+                } else {
+                    toast.error('Morate biti prijavljeni da biste postavili oglas!');
+                    
+            };
         navigate(`/booking?hideNavbar=${true}&dolazak=${reservationDolazak}&odlazak=${reservationOdlazak}&gosti=${gostiReservation}&listingId=${listing?.id}&totalNightsCost=${totalNightsCost}&totalCleaningFeeCost=${totalCleaningFeeCost}&totalServicesFeeCost=${totalServicesFeeCost}&reservationNights=${reservationNights}`);
     };
 
@@ -716,7 +748,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                     <div className='location-container  mt-8 w-full'>
                         <div className='flex flex-col gap-2 p-4'>
                             <h1 className='text-2xl font-bold'>Gdje ćete biti</h1>
-                            <p>{`${listing?.location.address}, ${listing?.location.city}, ${listing?.location.country}`}</p>
+                            <p>{`${listing?.location.street}, ${listing?.location.city}, ${listing?.location.country}`}</p>
                         </div>
                        
                         <div className='map-container flex justify-center items-center w-full mt-4 p-4'>

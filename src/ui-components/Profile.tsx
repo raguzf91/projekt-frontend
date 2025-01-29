@@ -68,6 +68,8 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
     };
     useEffect(() => {
         const fetchReviews = async () => {
+          console.log("user city:", user?.city);
+          console.log("average rating:", user?.averageRating);
           try {
             const response = await fetch(`http://localhost:8080/api/user/reviews/${user?.id}`);
             if (response.ok) {
@@ -112,9 +114,9 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
         <>
         {loading ? <p><Spinner loading={loading}/></p> :
 
-            <div className={` ${listingPage ? 'bg-white' : 'pr-20 pl-20'} flex profile container w-full shadow-2xl p-10   `}>
-            <div className="left-profile-container flex flex-col  w-1/3 ">
-                <div className="general-info-container p-4  flex items-center shadow-2xl w-1/2 rounded-3xl">
+            <div className={` ${listingPage ? 'bg-white' : 'pr-20 pl-20'} flex profile container w-full h-full shadow-2xl p-10   `}>
+            <div className="left-profile-container flex flex-col  w-1/3 pr-20">
+                <div className="general-info-container p-4  flex items-center shadow-2xl w-full rounded-3xl">
                     <div className="left-general-info-container p-4 flex flex-col items-center">	
                         <div>
                             <img src={userIcon} alt="profile" className="rounded-full h-28 w-28 border-2" />
@@ -148,12 +150,16 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                     <div className='flex mt-8 justify-between w-1/2  '>
                         <div className='flex '>
                             <IoMdGlobe className='w-6 h-6 mr-4' />
-                            <p className=''>Živi u {user?.city}, {user?.country}</p>
-                        </div>
+                            <p className=''>
+    {user?.city ? `Živi u ${user.city}, ${user.country}` : 'Korisnik nije podijelio gdje živi'}
+</p>                        </div>
                        <div className='flex '>
                             <IoLanguage className='w-6 h-6 mr-4' />
-                            <p className=''>Govori {user?.speaksLanguages.join(', ')}</p>
-                        </div> 
+                            <p className=''>
+    {user?.speaksLanguages && user.speaksLanguages.length > 0 
+        ? `Govori ${user.speaksLanguages.join(', ')}` 
+        : 'Korisnik nije podijelio koje jezike zna'}
+</p>                        </div> 
                     </div>
                     <div className='mt-8 border-b-2 pb-8'>
                         <p>{user?.bio}</p>
@@ -184,6 +190,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                         <div>
                                 <p onClick={handleShowAllReviews} className='underline mt-8 cursor-pointer'>{`Prikaži sve recenzije ${listingPage ? 'za ovaj apartman' : 'za ovoga korisnika'} `}</p>
                         </div>
+                        
                     </div>
 
                     

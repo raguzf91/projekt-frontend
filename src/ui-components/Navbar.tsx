@@ -25,7 +25,10 @@ import {toast} from 'react-toastify';
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
 import { Autocomplete } from '@react-google-maps/api';
+import { useUser } from '../context/UserContext';
 import { useSearchParamsContext } from '../context/SearchParamsContext';
+import Cookies from 'js-cookie';
+
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
     setBrojNocenja: (value: number) => void;
@@ -57,7 +60,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
     const activateLogin = searchParams.get('activateLogin');
-    
+    const { user } = useUser();
     
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -259,6 +262,20 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
 
     };
 
+    const handleNavigateToProfile = () => {
+        navigate('/profile');
+    };
+
+    const handleNavigateToCreateListing = () => {
+        const accessToken = Cookies.get('access_token');
+        if(user && accessToken) {
+            navigate('/become-a-host/create-listing');
+        } else {
+            toast.error('Morate biti prijavljeni da biste postavili oglas!');
+            setLoginVisible(true);
+    };
+};
+
     
 
     
@@ -270,9 +287,9 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
             <nav className='navbar'>
-                <div className={`navbar-container ${(verificationType === 'ACTIVATE_ACCOUNT ' || verificationType === 'VERIFY_ACCOUNT' || hideNavbar === true ) ? 'hidden' : 'flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'}`}>
+                <div className='flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'>
                    
-    className                <div className='upper-navbar w-full flex justify-between items-center '>
+                   <div className='upper-navbar w-full flex justify-between items-center '>
                         <img onClick={handleNavigateToHome} src={logo} alt="logo" className='2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer ' />
                         {!ismdScreen && 
                             <div onClick={handleSearchActive} className={`not-active-navbar ${searchActive ? 'hidden' : 'flex justify-between items-center relative pl-6 xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border-2 hover:shadow-xl cursor-pointer w-1/3 2xl:w-1/2 h-12 ml-8 '}`}>
@@ -303,7 +320,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                         unmountOnExit
                     >
                     
-                    <div className={`middle-navbar ${ismdScreen ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
+                    <div className={`middle-navbar ${ismdScreen || hideNavbar ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
                     <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                         <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
                         <Autocomplete>
@@ -406,7 +423,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                         
                         <div className='right-navbar flex gap-3 mr-3 2xl:gap-4 2xl:mr-4'>
                             <div className='2xl:w-40 2xl:h-14 md:w-36 md:h-12 mr-6 hover:bg-gray-100 cursor-pointer rounded-xl flex items-center content-center justify-center'>
-                                <Link to="become-a-host" className='upper-right-navbar-text text-md xl:text-lg font-semibold text-center'>Airbnb tvoj dom</Link>
+                                <p onClick={handleNavigateToCreateListing} className='upper-right-navbar-text text-md xl:text-lg font-semibold text-center'>Airbnb tvoj dom</p>
                             </div>
                             <div className='relative cursor-pointer flex gap-2 w-24 rounded-2xl hover:shadow-md justify-center items-center' onClick={toggleDropdown} ref={dropdownRef}>
                                 <IoMdMenu className=' 2xl:w-16 2xl:h-16  w-7 h-7' />
@@ -415,22 +432,31 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                                 </div>
                                 {dropdownVisible && (
                                     <div id="dropdownInformation" className="absolute right-0 top-8 mt-4 z-10 bg-white divide-y divide-gray-100 rounded-md shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
-                                        <div className="text-md border-b-2 text-gray-900 dark:text-white w-full">
+                                         {user ? (
+                                            <div className='flex flex-col'>
+                                                <ul className="py-2 text-md text-gray-700 dark:text-gray-200" aria-labelledby="dropdownInformationButton">
+                    <li>
+                        <p onClick={handleNavigateToProfile}  className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profil</p>
+                    </li>
+                    <li>
+                        <p  className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lista želja</p>
+                    </li>
+                    
+                </ul>
+                <div className="py-2">
+                    <a href="#" className="block font-semibold px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Odjava</a>
+                </div>
+                                            </div>
+                
+                
+            ) : (
+                <div className="text-md border-b-2 text-gray-900 dark:text-white w-full">
                                             <a href="#" onClick={toggleRegister} className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Registracija</a>
                                             <a href="#" onClick={toggleLogin} className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Prijava</a>
                                         </div>
-                                        <ul className="py-2 text-md text-gray-700 dark:text-gray-200" aria-labelledby="dropdownInformationButton">
-                                            
-                                            <li>
-                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profil</a>
-                                            </li>
-                                            <li>
-                                                <a href="#" className="block font-semibold px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Lista želja</a>
-                                            </li>
-                                        </ul>
-                                        <div className="py-2">
-                                            <a href="#" className="block font-semibold px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Odjava</a>
-                                        </div>
+            )}
+                                        
+                                        
                                     </div>
                                 )}
                             </div>

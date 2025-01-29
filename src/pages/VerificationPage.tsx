@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 import Spinner
  from "../ui-components/Spinner";
 import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
+
 const VerificationPage = () => {
 
     const { searchParams, setSearchParams } = useSearchParamsContext();
@@ -22,6 +24,7 @@ const VerificationPage = () => {
         setKeyInput(value);
         
     };
+    const { setUser } = useUser();
 
 
     const navigate = useNavigate();
@@ -63,6 +66,13 @@ const VerificationPage = () => {
                 if(verificationType === 'VERIFY_ACCOUNT') {
                     toast.success('Uspješno ste se prijavili');
                     setSearchParams({});
+                    Cookies.set('access_token', data.data.access_token, { expires: 7 });
+                    Cookies.set('refresh_token', data.data.refresh_token, { expires: 7 });
+                    setUser({
+                        id: data.data.user.id,
+                        email: data.data.user.email,
+                        role: data.data.user.roleName,
+                    });
                     navigate('/');
                 }
                 

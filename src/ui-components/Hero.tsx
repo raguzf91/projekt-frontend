@@ -43,7 +43,7 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing}
     useEffect(() => {
         if (menuFilter !== '') {
             const fetchAllListingsByCategory = async () => {
-                const apiUrl = `http://localhost:8080/api/listing?category=${menuFilter}`;
+                const apiUrl = `http://localhost:8080/api/listing/category/${menuFilter}`;
                 console.log(apiUrl);
                 try {
                     const response = await fetch(apiUrl);

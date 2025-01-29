@@ -42,7 +42,6 @@ interface HeroBoxProps {
         rating: number;
         description: string;
         reviews: string[];
-        category: string;
         typeOfListing: string;
     };
     brojNocenja: number;

@@ -5,6 +5,7 @@ import { useNavbarFilter } from '../../context/NavbarFilterProvider';
 import logo from '../../assets/images/logo.png';
 import { useNavigate } from 'react-router-dom';
 import "./css/CreateListing.css"
+
 const CreateListingHomePage = () => {
     const { setHideNavbar} = useNavbarFilter();
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ const CreateListingHomePage = () => {
         };
 
         const handleNavigateToNext = () => {
-            navigate("/become-a-host/listing-type", { replace: true });
+            navigate("/become-a-host/create-listing", { replace: true });
         };
 
         

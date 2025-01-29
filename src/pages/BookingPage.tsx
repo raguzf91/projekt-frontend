@@ -10,7 +10,8 @@ import { FaRegCreditCard } from "react-icons/fa6";
 import { FaLock } from "react-icons/fa";
 import React from "react";
 import Spinner from "../ui-components/Spinner";
-
+import Cookies from 'js-cookie';
+import { useUser } from "../context/UserContext";
 interface Photo{
     photoUrl: string;
     name: string;
@@ -86,7 +87,14 @@ const BookingPage = () => {
     useEffect(() => {
             const fetchListing = async () => {
                 try {
-                    const response = await fetch(`http://localhost:8080/api/listing/${listingId}`);
+                    const accessToken = Cookies.get('access_token');
+                    const response = await fetch(`http://localhost:8080/api/listing/${listingId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`,
+                        },
+                    });
                     const data = await response.json();
                     const { listingData } = data.data; // Extract listing from data
                     console.log("Listing data: ", listingData);
