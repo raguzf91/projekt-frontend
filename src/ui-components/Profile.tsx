@@ -6,6 +6,8 @@ import { IoMdGlobe } from "react-icons/io";
 import { IoLanguage } from "react-icons/io5";
 import { IoIosArrowDropright } from "react-icons/io";
 import { IoIosArrowDropleft } from "react-icons/io";
+import logo from '../assets/images/logo.png';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -90,7 +92,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
         };
     
         fetchReviews();
-      }, []);
+      }, [user?.averageRating, user?.city, user?.id]);
 
       const reviewPostedAgo = (date: string) => {
         const currentDate = new Date();
@@ -109,12 +111,23 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
         }
       };
 
+      const navigate = useNavigate();
+
+      const handleNavigateToHome = () => {
+        
+        navigate("/");
+    };
+
 
     return (
         <>
         {loading ? <p><Spinner loading={loading}/></p> :
-
-            <div className={` ${listingPage ? 'bg-white' : 'pr-20 pl-20'} flex profile container w-full h-full shadow-2xl p-10   `}>
+          <section className='flex flex-col w-full h-full'>
+            <header className='flex justify-start items-center w-full p-4'>
+                    <img src={logo} onClick={handleNavigateToHome} className='p-8 2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer' alt="logo" />
+                </header>
+            <div className={` ${listingPage ? 'bg-white' : 'pr-20 pl-20'} flex  profile container w-full h-full shadow-2xl p-10   `}>
+             
             <div className="left-profile-container flex flex-col  w-1/3 pr-20">
                 <div className="general-info-container p-4  flex items-center shadow-2xl w-full rounded-3xl">
                     <div className="left-general-info-container p-4 flex flex-col items-center">	
@@ -133,7 +146,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                        </div>
                        <div className='flex flex-col w-full pb-2 items-center justify-center  border-b mt-2 '>
                         <div className='flex items-center justify-center gap-1'>
-                            <p className='text-2xl font-bold'>{user.averageRating}</p>
+                            <p className='text-2xl font-bold'>{user.averageRating.toFixed(2)}</p>
                             <IoMdStar className='w-6 h-6' />
                         </div>
                             <p className='text-sm'>Ocjena</p>
@@ -196,6 +209,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                     
             </div>
         </div>
+        </section>
         }
         </>
         

@@ -3,7 +3,7 @@ import VerificationInput from "react-verification-input";
 import { useSearchParamsContext } from '../context/SearchParamsContext';
 import logo from '../assets/images/logo.png';
 import { useUser } from '../context/UserContext';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import '../pages/css/VerificationPage.css';
 import { toast } from "react-toastify";
 import Spinner
@@ -24,7 +24,7 @@ const VerificationPage = () => {
         setKeyInput(value);
         
     };
-    const { setUser } = useUser();
+    const { setUser, user } = useUser();
 
 
     const navigate = useNavigate();
@@ -68,11 +68,20 @@ const VerificationPage = () => {
                     setSearchParams({});
                     Cookies.set('access_token', data.data.access_token, { expires: 7 });
                     Cookies.set('refresh_token', data.data.refresh_token, { expires: 7 });
-                    setUser({
+
+                    const user = {
                         id: data.data.user.id,
                         email: data.data.user.email,
                         role: data.data.user.roleName,
-                    });
+                    };
+
+                    // Save user in session storage
+                    sessionStorage.setItem('user', JSON.stringify(user));
+
+                    // Update user context
+                    setUser(user);
+                   
+                    
                     navigate('/');
                 }
                 
@@ -91,7 +100,7 @@ const VerificationPage = () => {
             setLoading(false);
         }
     };
-        
+
             
 
     return (

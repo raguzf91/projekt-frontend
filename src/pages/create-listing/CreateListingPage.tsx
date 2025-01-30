@@ -59,7 +59,8 @@ import { useMediaQuery } from 'react-responsive';
 import { FaHouseUser } from "react-icons/fa";
 import { GiWoodCabin } from "react-icons/gi";
 import Spinner from '../../ui-components/Spinner';
-
+import Cookies from 'js-cookie';
+import { useUser } from "../../context/UserContext";
 
 
 interface CreateListingProps {
@@ -119,7 +120,6 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
     const [priceInvalid, setPriceInvalid] = useState(false);
     const [cleaningFee, setCleaningFee] = useState('10');
     const [cleaningFeeInvalid, setCleaningFeeInvalid] = useState(false);
-    
     const [photo, setPhoto] = useState<File | null>(null);
     const [photos, setPhotos] = useState<File[] | null>(null);
     const [previewPhotos, setPreviewPhotos] = useState<string[]>([]);
@@ -127,7 +127,8 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
     const [uploadPhotos, setUploadPhotos] = useState(true);
     const [uploadedPhotos, setUploadedPhotos] = useState<Photo[]>([]);
     const [loading, setLoading] = useState(false);
-
+    const token = Cookies.get('access_token'); // Add this line
+    const { user } = useUser();
     const listingAddress: ListingAddress = {
         streetNumber: '',
         street: '',
@@ -135,6 +136,14 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
         country: '',
         postalCode: ''
     };
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/login');
+            toast.error('Molimo prijavite se kako biste dodali novi smještaj');
+        }
+
+    }, [token, navigate]); // Add this line
     const [fullAddress, setFullAddress] = useState('');
 
 
@@ -180,7 +189,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                     
                     const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${API_KEY}`);
                     const data = await response.json();
-                    
+                    console.log(data.results[0]);
                     center.lat = data.results[0].geometry.location.lat;
                     center.lng = data.results[0].geometry.location.lng;
                     setLat(center.lat);
@@ -220,14 +229,14 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
        fetchLocation();
        fetchAmenities();
 
-    }, [fullAddress, API_KEY]);
+    }, [fullAddress, API_KEY, center, map]);
 
 
 
 
     const handleOnPlacesChanged = () => {
         const address = inputRef.current.getPlaces();
-        
+        console.log(address[0].address_components);
         for (let i = 0; i < address[0].address_components.length; i++) {
             if(address[0].address_components[i].types.includes('street_number')) {
                 listingAddress.streetNumber = address[0].address_components[i].long_name;
@@ -241,7 +250,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                 
             };
 
-            if(address[0].address_components[i].types.includes('locality')) {
+            if(address[0].address_components[i].types.includes('locality') || address[0].address_components[i].types.includes('postal_town')) {
                 listingAddress.city = address[0].address_components[i].long_name;
                 setCity(listingAddress.city);
                 
@@ -267,6 +276,12 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
             setFullAddress(`${listingAddress.street} ${listingAddress.streetNumber}, ${listingAddress.city}, ${listingAddress.country}, ${listingAddress.postalCode}`);
             console.log();
         } else {
+            console.log(listingAddress.city);
+            console.log(listingAddress.street);
+            console.log(listingAddress.streetNumber);
+            console.log(listingAddress.country);
+            console.log(listingAddress.postalCode);
+            
             toast.error("Molimo unesite ispravnu adresu");
             setStreetNumber('');
             setStreet('');
@@ -513,62 +528,65 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
             }, [photos]);
 
             
-
             useEffect(() => {
                 const handleSendForm = async () => {
-
-                    if(title === '' || description === '' || price === '' || cleaningFee === '' || fullAddress === '' || typeOfListing === '' || uploadedPhotos.length === 0 || selectedAmenities.length === 0 || fullLocation === undefined) {
+                    // Validation
+                    if (
+                        title === '' || description === '' || price === '' || cleaningFee === '' ||
+                        fullAddress === '' || typeOfListing === '' || uploadedPhotos.length === 0 ||
+                        selectedAmenities.length === 0 || fullLocation === undefined
+                    ) {
                         toast.error("Molimo popunite sva polja");
                         return;
-                    };
-                    const listingData = new FormData();
-                    const photosData = new FormData();
-                    listingData.append('title', title);
-                    listingData.append('description', description);
-                    listingData.append('price', price);
-                    const cleaningFeeDecimal = parseInt(cleaningFee) * 0.1;
-                    const cleaningFeeString = cleaningFeeDecimal.toString();
-    
-                    listingData.append('cleaningFee', cleaningFeeString);
-                    listingData.append('refundable', refundable.toString());
-                    listingData.append('maxGuests', maxGuests.toString());
-                    listingData.append('numberOfBedrooms', numberOfBedrooms.toString());
-                    listingData.append('numberOfBeds', numberOfBeds.toString());
-                    listingData.append('numberOfBathrooms', numberOfBathrooms.toString());
-                    listingData.append('fullAddress', fullAddress);
-                    listingData.append('latitude', lat.toString());
-                    listingData.append('longitude', lng.toString());
-                    listingData.append('typeOfListing', typeOfListing);
-    
-                    uploadedPhotos.forEach((photo) => {
-                        listingData.append('photos', JSON.stringify(photo));
-                    });
-                    listingData.append('amenities', JSON.stringify(selectedAmenities));
-    
-                    if(fullLocation !== undefined) {
-                        listingData.append('fullLocation', JSON.stringify(fullLocation));
-                    };
-
-                    for (let [key, value] of listingData.entries()) {
-                        console.log(`${key}: ${value}`);
                     }
-                    
-                    
+            
+                    // Construct JSON object
+                    const listingData = {
+                        title,
+                        description,
+                        price: parseFloat(price), 
+                        cleaningFee: parseFloat(cleaningFee) * 0.1, 
+                        refundable,
+                        maxGuests: maxGuests,
+                        numberOfBedrooms: numberOfBedrooms,
+                        numberOfBeds: numberOfBeds,
+                        numberOfBathrooms: numberOfBathrooms,
+                        fullAddress: fullAddress,
+                        typeOfListing: typeOfListing,
+                        photos: uploadedPhotos, 
+                        amenities: selectedAmenities,
+                        fullLocation: fullLocation,
+                        userId: user?.id
+                    };
+            
+                    // Log the JSON object for debugging
+                    console.log(listingData);
+            
+                    // Send JSON request
+                    try {
+                        const response = await fetch(`http://localhost:8080/api/listing/create`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'AUTHORIZATION': `Bearer ${token}`
 
-                    const response = await fetch(`http://localhost:8080/api/listing/create`, {
-                        method: 'POST',
-                        body: listingData
-                    });
-                    if(response.ok) {
-                        console.log(response);
-                        toast.success("Uspješno ste dodali novi smještaj");
-                        navigate('/');
-                    } else {
-                        toast.error("Greška prilikom dodavanja smještaja");
-                        console.log(response);
+                            },
+                            body: JSON.stringify(listingData)
+                        });
+            
+                        if (response.ok) {
+                            toast.success("Uspješno ste dodali novi smještaj");
+                            navigate('/');
+                        } else {
+                            toast.error("Greška prilikom dodavanja smještaja");
+                            console.log(response);
+                        }
+                    } catch (error) {
+                        console.error("Error:", error);
+                        toast.error("Došlo je do greške prilikom slanja zahtjeva");
                     }
-            };
-
+                };
+            
                 if (uploadedPhotos.length !== 0) {
                     handleSendForm();
                 }
@@ -589,10 +607,10 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                 numberOfBeds,
                 numberOfBathrooms,
                 refundable,
-                navigate
-                
+                navigate,
+                token,
+                user?.id
             ]);
-
 
             const onDrop = useCallback((acceptedFiles: File[]) => {
                 const newPhotos: File[] = [];

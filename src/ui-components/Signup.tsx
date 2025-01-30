@@ -80,6 +80,7 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
                 handleNavigateToVerifyAccount(verificationTypeRef);
             } else {
                 console.error('Registration failed:', response.statusText);
+                toast.error('Korisnik sa unesenim podacima već postoji');
             }
 
         } catch (error) {

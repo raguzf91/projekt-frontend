@@ -165,7 +165,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const [totalCleaningFeeCost, setTotalCleaningFeeCost] = useState<number>(0);
     const [totalServicesFeeCost, setTotalServicesFeeCost] = useState<number>(0);
     const [lat, setLat] = useState<number>(0);
-    const [long, setLng] = useState<number>(0);
+    const [lng, setLng] = useState<number>(0);
     const center = React.useMemo(() => ({ lat: 45.346241, lng: 19.008960 }), []);
 
      const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -314,8 +314,25 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                 setLoading(false);
             }
         };
+      
+
+        
+        fetchListing();
+        
+    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress]);
+    
+    useEffect(() => {
+       
+            map?.panTo({ lat, lng });
+        
+    }, [map, lat, lng]);
+
+
+
+    useEffect(() => {
         const fetchLocation = async () => {
             try {
+                console.log("Listing location: ", listing?.location.fullAddress);
                 const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing?.location.fullAddress)}&key=${API_KEY}`);
                 const data = await response.json();
                 console.log(data)
@@ -324,26 +341,19 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                     center.lng = data.results[0].geometry.location.lng;
                     setLat(center.lat);
                     setLng(center.lng);
-                    if(map !== null) {
-                        map.panTo(center);
-
-                    }
+                  
 
             } catch (error) {
                 console.error(error);
             }
         };
-
-        
-        fetchListing();
-        fetchLocation();
-    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress]);
-    
-    useEffect(() => {
-        if (map && center) {
-            map.panTo(center);
+        if(listing) {
+            fetchLocation();
         }
-    }, [map, center]);
+
+    }, [listing?.location.latitude, listing?.location.longitude, API_KEY, map, center, listing]);
+
+
     const calculateTimePassed = (date: string) => {
         const createdAt = dayjs(date);
         const yearsPassed = dayjs().diff(createdAt, 'year');
@@ -408,12 +418,12 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const handleNavigateToBookingPage = () => {
          const accessToken = Cookies.get('access_token');
                 if(user && accessToken) {
-                    navigate('/become-a-host/create-listing');
+                    navigate(`/booking?hideNavbar=${true}&dolazak=${reservationDolazak}&odlazak=${reservationOdlazak}&gosti=${gostiReservation}&listingId=${listing?.id}&totalNightsCost=${totalNightsCost}&totalCleaningFeeCost=${totalCleaningFeeCost}&totalServicesFeeCost=${totalServicesFeeCost}&reservationNights=${reservationNights}`);
                 } else {
                     toast.error('Morate biti prijavljeni da biste postavili oglas!');
                     
             };
-        navigate(`/booking?hideNavbar=${true}&dolazak=${reservationDolazak}&odlazak=${reservationOdlazak}&gosti=${gostiReservation}&listingId=${listing?.id}&totalNightsCost=${totalNightsCost}&totalCleaningFeeCost=${totalCleaningFeeCost}&totalServicesFeeCost=${totalServicesFeeCost}&reservationNights=${reservationNights}`);
+       
     };
 
 
@@ -478,10 +488,19 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                     </div>
                                     
                                     <div className='flex-col w-1/4 justify-center items-center gap-2 '>
-                                        <p className='review-score text-center 2xl:text-2xl md:text-xl font-bold'>{listing?.rating}</p>
-                                        <div className='flex md:w-full xl:w-full gap-1 items-center justify-center'>
-                                            {stars}
+                                    {listing?.rating === 1 ? (
+                                         <p className='review-score text-center 2xl:text-2xl md:text-xl font-bold'>Novi oglas</p>
+                                    ) : (
+                                        <div className='flex flex-col'>
+                                              <p className='review-score text-center 2xl:text-2xl md:text-xl font-bold'>{listing?.rating}</p>
+                                             <div className='flex md:w-full xl:w-full gap-1 items-center justify-center'>
+                                                 {stars}
+                                             </div>
                                         </div>
+                                      
+                                    )}
+                                        
+                                        
                                     </div>
                                     <div className='flex-col w-1/4 justify-center items-center gap-2'>
                                         <p className='review-score text-center text-2xl font-bold'>{listing?.numberOfReviews}</p>
@@ -677,11 +696,11 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                 </div>
                                 <div className='flex justify-between w-full mt-2 '>
                                      <p className='underline '>Naknada za čišćenje</p>
-                                     <p>{`€${totalCleaningFeeCost}`}</p>               
+                                     <p>{`€${totalCleaningFeeCost.toFixed(2)}`}</p>               
                                 </div>
                                 <div className='flex justify-between w-full mt-2 '>
                                 <p className='underline '>Naknada za usluge</p>
-                                <p>{`€${totalServicesFeeCost}`}</p>             
+                                <p>{`€${totalServicesFeeCost.toFixed(2)}`}</p>             
                                 </div>
                             </div>
                             <div className='total-cost-container flex justify-between w-full mt-4 mb-4'>
@@ -752,7 +771,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                         </div>
                        
                         <div className='map-container flex justify-center items-center w-full mt-4 p-4'>
-                            {isLoaded && (
+                            {isLoaded && listing && lat && lng && (
                                 <GoogleMap
                                     mapContainerStyle={{ width: '100%', height: '40rem' }}
                                     zoom={15}
@@ -760,7 +779,10 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                     onLoad={map => setMap(map)}
                                     
                                 >
-                                <Marker position={center} />  
+                                {listing && 
+                                    <Marker position={center} /> 
+                                }
+                                 
                                 </GoogleMap>
                             )}
                         </div>  

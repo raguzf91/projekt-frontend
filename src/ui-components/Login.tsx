@@ -58,6 +58,8 @@ const Login = ({toggleLogin}:toggleProps) => {
                     handleNavigateToVerifyAccount(verificationTypeRef);
                 } else {
                     console.error('Registration failed:', response.statusText);
+                    toast.error('Krivo korisničko ime ili lozinka. Pokušajte ponovno');
+                    
                 }
     
             } catch (error) {

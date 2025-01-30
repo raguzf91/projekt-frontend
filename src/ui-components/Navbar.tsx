@@ -61,6 +61,17 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const verificationType = searchParams.get('verificationType');
     const activateLogin = searchParams.get('activateLogin');
     const { user } = useUser();
+    const { setUser } = useUser();
+
+        useEffect(() => {
+         
+          const storedUser = sessionStorage.getItem('user');
+          if (storedUser) {
+            const user = JSON.parse(storedUser);
+            setUser(user); 
+            console.log('User restored from sessionStorage:', user);
+          }
+        }, [setUser]);
     
     const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -269,7 +280,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const handleNavigateToCreateListing = () => {
         const accessToken = Cookies.get('access_token');
         if(user && accessToken) {
-            navigate('/become-a-host/create-listing');
+            navigate('/become-a-host');
         } else {
             toast.error('Morate biti prijavljeni da biste postavili oglas!');
             setLoginVisible(true);
@@ -286,7 +297,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                 
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
             )}
-            <nav className='navbar'>
+            <nav className= {` ${hideNavbar ? 'hidden' : 'navbar'}`}>
                 <div className='flex md:flex-col justify-between items-center p-4  2xl:p-8 border bg-white border-b-gray-500'>
                    
                    <div className='upper-navbar w-full flex justify-between items-center '>
