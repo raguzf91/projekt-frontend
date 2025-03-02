@@ -28,13 +28,14 @@ import { Autocomplete } from '@react-google-maps/api';
 import { useUser } from '../context/UserContext';
 import { useSearchParamsContext } from '../context/SearchParamsContext';
 import Cookies from 'js-cookie';
-
+import { jwtDecode } from 'jwt-decode';
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
     setBrojNocenja: (value: number) => void;
     numberOfGuests: number;
 }
 const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) => {
+    const { setUser } = useUser();
     const { brojNocenja, regija, dolazak, odlazak, gosti, handleShowSmallScFilter, showFilterSmallSc, setShowFilterSmallSc, handleListingFilterChange, location, period } = useNavbarFilter();
     const [loginVisible, setLoginVisible] = useState(false);
     const [registerVisible, setRegisterVisible] = useState(false);
@@ -60,8 +61,24 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
     const activateLogin = searchParams.get('activateLogin');
+    const jwtToken = searchParams.get('token');
+    if(jwtToken) {
+        Cookies.set('access_token', jwtToken);
+        const payload = jwtDecode(jwtToken);
+        console.log('Payload:', payload);
+        const id = payload.id;
+        const email = payload.sub;
+        const roleName = payload.role;
+        setUser({ id: id, email: email, role: roleName });
+        sessionStorage.setItem('user', JSON.stringify({ id: id, email: email, role: roleName }));
+        console.log('User set from token:', { id: id, email: email, role: roleName });
+        setSearchParams({});
+
+
+    }
+
     const { user } = useUser();
-    const { setUser } = useUser();
+    
 
         useEffect(() => {
          

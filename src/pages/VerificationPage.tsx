@@ -66,8 +66,8 @@ const VerificationPage = () => {
                 if(verificationType === 'VERIFY_ACCOUNT') {
                     toast.success('Uspješno ste se prijavili');
                     setSearchParams({});
-                    Cookies.set('access_token', data.data.access_token, { expires: 7 });
-                    Cookies.set('refresh_token', data.data.refresh_token, { expires: 7 });
+                    Cookies.set('access_token', data.data.access_token);
+                    Cookies.set('refresh_token', data.data.refresh_token);
 
                     const user = {
                         id: data.data.user.id,

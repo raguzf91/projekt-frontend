@@ -96,6 +96,7 @@ interface Location {
     postalCode: string;
     latitude: number;
     longitude: number;
+    fullAddress: string;
 }
 
 const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) => {
@@ -305,6 +306,7 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
             toast.info("Adresa je već potvrđena");
             return;
         }
+
         setFullLocation({
             streetNumber: streetNumber,
             street: street,
@@ -312,7 +314,8 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
             country: country,
             postalCode: postalCode,
             latitude: lat,
-            longitude: lng
+            longitude: lng,
+            fullAddress: fullAddress
         })
         setAddressAccepted(true);
         toast.success("Adresa je uspješno potvrđena");
@@ -539,6 +542,8 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                         toast.error("Molimo popunite sva polja");
                         return;
                     }
+
+                    console.log(fullAddress)
             
                     // Construct JSON object
                     const listingData = {
@@ -551,7 +556,6 @@ const CreateListingPage : React.FC<CreateListingProps>  = ({API_KEY, isLoaded}) 
                         numberOfBedrooms: numberOfBedrooms,
                         numberOfBeds: numberOfBeds,
                         numberOfBathrooms: numberOfBathrooms,
-                        fullAddress: fullAddress,
                         typeOfListing: typeOfListing,
                         photos: uploadedPhotos, 
                         amenities: selectedAmenities,

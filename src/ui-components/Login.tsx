@@ -68,6 +68,15 @@ const Login = ({toggleLogin}:toggleProps) => {
                 
             }
         };
+
+        const handleGoogleLogin = async () => {
+            try {
+                window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+            } catch (error) {
+                toast.error('Greška prilikom registracije');
+                console.error(error);
+            }
+        };
     
     return (
         <div id="authentication-modal" aria-hidden="true" className="fixed inset-0 z-50  flex items-center  justify-center overflow-y-auto overflow-x-hidden h-full ">
@@ -115,7 +124,7 @@ const Login = ({toggleLogin}:toggleProps) => {
                                 <p className="text-center">ili</p>
                             </div>
                             <div className="google-register flex  hover:bg-gray-300 items-center rounded-lg  ">
-                            <button type="submit" className="w-full text-gray-500 font-bold bg-white rounded-lg hover:bg-gray-300 text-sm px-5 py-2.5 text-center flex items-center justify-center space-x-2 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-red-800">
+                            <button onClick={handleGoogleLogin} type="submit" className="w-full text-gray-500 font-bold bg-white rounded-lg hover:bg-gray-300 text-sm px-5 py-2.5 text-center flex items-center justify-center space-x-2 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-red-800">
                                 <FcGoogle className="text-center" />
                                 <span>Nastavi koristeći Google</span>
                             </button>
