@@ -12,6 +12,8 @@ import React from "react";
 import Spinner from "../ui-components/Spinner";
 import Cookies from 'js-cookie';
 import { useUser } from "../context/UserContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 interface Photo{
     photoUrl: string;
     name: string;
@@ -26,13 +28,15 @@ interface Listing {
     typeOfListing: string;
     numberOfReviews: number;
     rating: number;
+    maxGuests: number;
 }
 
 const BookingPage = () => {
+    const navigate = useNavigate();
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const listingId = searchParams.get('listingId');
     const [listing, setListing] = useState<Listing>();
-
+    const { user } = useUser();
     const dolazak = searchParams.get('dolazak')?.replace(/-/g, '.')
     const odlazak = searchParams.get('odlazak')?.replace(/-/g, '.');
     const gosti = searchParams.get('gosti');
@@ -81,6 +85,12 @@ const BookingPage = () => {
     const postalCodeRef = React.createRef<HTMLInputElement>();
 
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if(listingId == null || user?.id == null) {
+            window.location.href = '/';
+        }
+    }, []);
 
 
 
@@ -453,6 +463,66 @@ const BookingPage = () => {
                 };
             }, [postalCodeRef, postalCodeActive, postalCode.length]);
 
+
+        const isEmpty = (value: string | null | undefined) : boolean => 
+            value == null || value.trim() === '';
+
+        const handleSendBookingForm = async () => {
+            const userId = user?.id;
+            const accessToken = Cookies.get('access_token');
+            const listingId = searchParams.get('listingId');
+            const dolazak = searchParams.get('dolazak');
+            const odlazak = searchParams.get('odlazak');
+            const gosti = searchParams.get('gosti');
+            const totalNightsCost = parseInt(searchParams.get('totalNightsCost') || '0', 10);
+            const cleaningFeeCost = parseInt(searchParams.get('totalCleaningFeeCost') || '0', 10);
+            const servicesFeeCost = parseInt(searchParams.get('totalServicesFeeCost') || '0', 10);
+            const totalCost = totalNightsCost + cleaningFeeCost + servicesFeeCost;
+            const reservationNights = parseInt(searchParams.get('reservationNights') || '0', 10);
+            console.log(cardNumber);
+            console.log(expiryDate);
+            console.log(cvv);
+            console.log(street);
+            console.log(city);
+            console.log(country);
+            console.log(postalCode);
+
+            if (isEmpty(cardNumber) || isEmpty(expiryDate) || isEmpty(cvv) || isEmpty(street) || isEmpty(city) || isEmpty(country) || isEmpty(dolazak) || isEmpty(odlazak) || isEmpty(gosti)) {
+                toast.error('Molimo popunite sva polja');
+                return;
+            }
+
+            
+            const data = {
+                userId: userId,
+                checkIn: dolazak,
+                checkOut: odlazak,
+                numberOfGuests: gosti,
+                paymentAmount: totalCost,
+            };
+            console.log(data);
+            try {
+                const response = await fetch(`http://localhost:8080/api/listing/${listingId}/booking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify(data),
+                });
+                const responseData = await response.json();
+                console.log(responseData);
+                if(response.ok) {
+                    toast.success('Uspješno ste poslali zahtjev za rezervaciju');
+                    setTimeout(() => {
+                        navigate('/');
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
         
 
 
@@ -620,7 +690,7 @@ const BookingPage = () => {
                     </div>
 
                     <div className="w-full flex justify-center items-center">
-                        <button className="bg-gradient-to-r from-red-500 to-pink-500  text-white w-3/4 rounded-lg p-4 mt-4">Zahtjev za rezervaciju</button>
+                        <button onClick={handleSendBookingForm} className="bg-gradient-to-r from-red-500 to-pink-500  text-white w-3/4 rounded-lg p-4 mt-4"> Zahtjev za rezervaciju</button>
                     </div>
                     
                     

@@ -302,7 +302,37 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
             toast.error('Morate biti prijavljeni da biste postavili oglas!');
             setLoginVisible(true);
     };
+
 };
+
+    const handleLogout = async () => {
+        const accessToken = Cookies.get('access_token')
+        try {
+            const response = await fetch(`http://localhost:8080/api/auth/logout`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'AUTHORIZATION': `Bearer ${accessToken}`
+                },
+            });
+    
+            if (response.ok) {
+                toast.success('Uspješna odjava');
+                Cookies.remove('access_token');
+                setUser(null);
+                sessionStorage.removeItem('user');
+                setTimeout(() => {
+                    navigate('/');
+                }, 2000);
+            } else {
+                toast.error('Greška prilikom promjene osobnih informacija');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Greška prilikom odjave');
+        }
+    };
+
 
     
 
@@ -332,9 +362,8 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                             <div className='right-navbar'>
                                 <p className='font-semibold text-lg'>{`${gostiRef === 1 ? 'Unesite broj gostiju' : `Broj gostiju: ${gostiRef}` }`}</p>
                             </div>
-                            <div  className='search-icon cursor-pointer'>
-                                    <FaSearch className={`${searchActive ? 'hidden' : ' h-10 w-10 2xl:w-12 2xl:h-12 2xl:p-3 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl  transition-colors duration-150'} `} />
-                                    
+                            <div onClick={handleSendSearch} className='search-icon cursor-pointer'>
+                                    <FaSearch className={`${searchActive ? 'hidden' : ' h-10 w-10 2xl:w-12 2xl:h-12 2xl:p-3 p-2.5 text-white bg-red-500 hover:bg-red-600 rounded-3xl  transition-colors duration-150'} `} />  
                             </div>
                     </div>
                         }
@@ -472,7 +501,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     
                 </ul>
                 <div className="py-2">
-                    <a href="#" className="block font-semibold px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Odjava</a>
+                    <p onClick={handleLogout}  className="block font-semibold px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Odjava</p>
                 </div>
                                             </div>
                 

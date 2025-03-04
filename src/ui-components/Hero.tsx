@@ -17,10 +17,9 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing}
 
     const [listings, setListings] = useState<[]>([]);
     const [loading, setLoading] = useState(true);
-    
 
     const fetchAllListings = async () => {
-        const apiUrl =  'http://localhost:8080/api/listing/all';
+        const apiUrl =  `http://localhost:8080/api/listing/all`;
         console.log(apiUrl);
         try {
             const response = await fetch(apiUrl);

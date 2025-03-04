@@ -51,6 +51,7 @@ import Profile from '../ui-components/Profile';
 import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { useUser } from '../context/UserContext';
+import { FaTrash } from "react-icons/fa";
 interface ListingPageProps {
     servicesFee: number;
     isLoaded: boolean;
@@ -125,7 +126,6 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
         rating: number;
         description: string;
         reviews: Review[];
-        
         maxGuests: number;
         numberOfBeds: number;
         numberOfBedrooms: number;
@@ -173,7 +173,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
      const { user } = useUser();
   
     useEffect(() => {
-        setTotalNightsCost(listing?.price * reservationNights) 
+        setTotalNightsCost(listing?.price * (reservationNights ? reservationNights : 1)); 
         setTotalCleaningFeeCost(listing?.price * listing?.cleaningFee);
         setTotalServicesFeeCost(listing?.price * servicesFee);
     }, [reservationDolazak, reservationOdlazak, listing?.price, listing?.cleaningFee, servicesFee]);
@@ -418,22 +418,64 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const handleNavigateToBookingPage = () => {
          const accessToken = Cookies.get('access_token');
                 if(user && accessToken) {
+                    if(reservationDolazak === '' || reservationOdlazak === '') {
+                        toast.error('Morate odabrati datume dolaska i odlaska');
+                        return;
+                    } else if(reservationNights < 1) {
+                        toast.error('Minimalan boravak je 1 noć');
+                        return;
+                    } else if(reservationNights > 30) {
+                        toast.error('Maksimalan boravak je 30 noći');
+                        return;
+                    } else if(gostiReservation < 1) {
+                        toast.error('Morate odabrati broj gostiju');
+                        return;
+                   
+                } else if(reservationDolazak === reservationOdlazak || dayjs(reservationDolazak, 'DD-MM-YYYY').isAfter(dayjs(reservationOdlazak, 'DD-MM-YYYY'))) {
+                    toast.error('Datumi dolaska i odlaska nisu ispravni');
+                    return;
+                } else if(listing && gostiReservation > listing.maxGuests) {
+                    toast.error(`Maksimalan broj gostiju je ${listing.maxGuests}`);
+                    return;
+                        
+                }
+                
+                else {
                     navigate(`/booking?hideNavbar=${true}&dolazak=${reservationDolazak}&odlazak=${reservationOdlazak}&gosti=${gostiReservation}&listingId=${listing?.id}&totalNightsCost=${totalNightsCost}&totalCleaningFeeCost=${totalCleaningFeeCost}&totalServicesFeeCost=${totalServicesFeeCost}&reservationNights=${reservationNights}`);
-                } else {
-                    toast.error('Morate biti prijavljeni da biste postavili oglas!');
-                    
-            };
-       
+                }
+        } else {
+            toast.error('Morate biti prijavljeni da biste postavili oglas!');
+        }
+
     };
 
-
+const handleDeleteListing = async () => {
+        const accessToken = Cookies.get('access_token');
+        if(user && accessToken) {
+            try {
+                const response = await fetch(`http://localhost:8080/api/listing/${listing?.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                if(response.ok) {
+                    toast.success('Oglas uspješno obrisan');
+                    navigate('/');
+                } else {
+                    toast.error('Došlo je do greške prilikom brisanja oglasa');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            toast.error('Morate biti prijavljeni da biste obrisali oglas');
+        }
+};
     
 
 
-
-   
-
-    return (
+return (
         <section className={`listing-section mt-6  ${darkScreen ? 'bg-black' : ''} ${showPhotos ? 'pr-0 pl-0 ' : 'pr-40 pl-40 md:pr-20 md:pl-20 sm:pr-10 sm:pl-10'}`}>
             {loading ? (<Spinner loading={loading} />) : (
                 <div className={`${showPhotos ? ' flex items-center  justify-center' : ''} `}>
@@ -445,10 +487,21 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                         
                         <div className='title-container flex justify-between items-center'>
                             {listing && <h1 className='font-bold text-3xl'>{listing.title}</h1>}
+                            <div className='flex align-center gap-2'>
                             <div className='like-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
                                 <LuHeart className='w-6 h-6 ' />
                                 <p className='underline underline-offset-2 text-lg'>Spremi</p>
                             </div>
+                            {user && user.id === listing?.user.id && 
+                                 <div onClick={handleDeleteListing} className='delete-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
+                                 <FaTrash className='w-6 h-6' />
+                                 <p className='underline underline-offset-2 text-lg'>Izbriši oglas</p>
+                             </div>
+                            }
+                           
+                            </div>
+                            
+
                         </div>
                         <div className='ohoto-container flex mt-4 cursor-pointer relative '>
                             <div className='main-photo w-1/2 h-full '>
@@ -629,14 +682,14 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                                       format: 'DD-MM-YYYY',
                                                       type: 'mask',
                                                     }} variant='borderless' 
-                                                    value={dayjs(reservationDolazak, 'DD-MM-YYYY')}  
-                                                    defaultValue={dayjs(dolazak, 'DD-MM-YYYY')} 
+                                                    value={reservationDolazak ? dayjs(reservationDolazak, 'DD-MM-YYYY') : undefined}
+                                                    defaultValue={dolazak ? dayjs(dolazak, 'DD-MM-YYYY') : undefined}
                                                     className='w-full font-semibold' 
                                                     picker="date" 
                                                     placeholder='Dolazak'
                                                     size='large' 
                                                     onChange={handleReservationDolazakChange}
-                                                    
+                                                    disabledDate={(current) => current && current < dayjs().startOf('day')}
                                                     />
                                                     
                                             </div>
@@ -647,13 +700,14 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                                                       format: 'DD-MM-YYYY',
                                                       type: 'mask',
                                                     }} variant='borderless' 
-                                                    value={dayjs(reservationOdlazak, 'DD-MM-YYYY')}  
-                                                    defaultValue={dayjs(odlazak, 'DD-MM-YYYY')} 
+                                                    value={reservationOdlazak ? dayjs(reservationOdlazak, 'DD-MM-YYYY') : undefined}
+                                                    defaultValue={odlazak ? dayjs(odlazak, 'DD-MM-YYYY') : undefined}
                                                     className='w-full font-semibold' 
                                                     picker="date" 
                                                     placeholder='Odlazak'
                                                     size='large' 
                                                     onChange={handleReservationOdlazakChange}
+                                                    disabledDate={(current) => current && current < dayjs().startOf('day').add(1, 'day')}
                                                     />
                                                     
                                             </div>
@@ -691,7 +745,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                             </div>
                             <div className='flex flex-col items-center justify-center cost-container mt-4 border-b-2 pb-4'>
                                 <div className='flex justify-between w-full mt-2 '>
-                                     <p className='underline '>{`€${listing?.price} X ${reservationNights} noćenja`}</p>
+                                     <p className='underline '>{`€${listing?.price} X ${reservationNights ? reservationNights : 1} noćenja`}</p>
                                      <p>{`€${totalNightsCost}`}</p>               
                                 </div>
                                 <div className='flex justify-between w-full mt-2 '>
@@ -788,7 +842,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                         </div>  
                     </div>
                         <div className='meet-your-host-container mt-8 w-full'>
-                            <Profile user={listing?.user} listingPage={true} yearsHosting = {yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
+                            <Profile  handleUserChange={() => {}} user={listing?.user} listingPage={true} yearsHosting = {yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
                         </div>  
                     </div>
                     

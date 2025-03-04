@@ -28,6 +28,7 @@ interface User {
     numberOfReviews: number;
     city: string;
     country: string;
+    oauth2User: boolean;
 }
 
 interface Photo {
@@ -78,11 +79,12 @@ const EditProfilePage : React.FC<EditProfilePageProps> = () => {
     const [userByIdLastName, setLastName] = useState<string>(userById?.lastName || '');
     const [userByIdEmail, setEmail] = useState<string>(userById?.email || '');
     const [userByIdPhoneNumber, setPhoneNumber] = useState<string>(userById?.phoneNumber || '');
-    const [userByIdHomeCity, setHomeCity] = useState<string>('');
-    const [userByIdBio, setBio] = useState<string>('');
-    const [userByIdHomeCountry, setHomeCountry] = useState<string>('');
-    const [userByIdSpeaksLanguages, setSpeaksLanguages] = useState<string[]>([]);
-    const [uploadedPhotos, setUploadedPhotos] = useState<Photo[]>([]);
+    const [userByIdHomeCity, setHomeCity] = useState<string>(userById?.city || '');
+    const [userByIdBio, setBio] = useState<string>(userById?.bio || '');
+    const [userByIdHomeCountry, setHomeCountry] = useState<string>(userById?.country || '');
+    const [userByIdSpeaksLanguages, setSpeaksLanguages] = useState<string[]>(userById?.speaksLanguages || []);
+    const [oauth2User, setOauth2User] = useState<boolean>(userById?.oauth2User ?? false);
+    const [uploadedPhotos, setUploadedPhotos] = useState<Photo[]>();
     const [profilePhoto, setProfilePhoto] = useState<File[]>();
     const [photo, setPhoto] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
@@ -190,6 +192,7 @@ const {acceptedFiles, getRootProps, getInputProps, isDragActive} = useDropzone({
                         setSpeaksLanguages(user.speaksLanguages);
                         setDefaultCheckedList(user.speaksLanguages);
                         setCheckedList(user.speaksLanguages);
+                        setOauth2User(user.oauth2User);
 
                     } else {
                         console.error('Error fetching data:', response.statusText);
@@ -327,14 +330,19 @@ const {acceptedFiles, getRootProps, getInputProps, isDragActive} = useDropzone({
                      
                      <MdOutlineKeyboardArrowDown className="w-6 h-6" />
                 </div>
-                <div onClick={() => handleEmailActive()} className="flex  justify-between mt-4 p-6 border rounded-lg">
+                {userById?.oauth2User ? 
+                <div className="flex flex-col gap-4 mt-4 ">
+                     <p className="text-lg font-light text-red-500">Ne možete promjeniti email</p>
+                </div> :    <div onClick={() => handleEmailActive()} className="flex  justify-between mt-4 p-6 border rounded-lg">
                      <div className="flex flex-col gap-4">
                          <p className="text-lg font-light">Email</p>
                          {emailActive && <input type="email" value={userByIdEmail} placeholder="Email" className=" appearance-none focus:outline-none rounded-lg p-2 w-3/4 text-lg" onChange={(e) => setEmail(e.target.value)}/> }
                      </div>
                      
                      <MdOutlineKeyboardArrowDown className="w-6 h-6" />
-                </div>
+                </div>   
+            }
+              
                 <div onClick={() => handlePhoneNumberActive()} className="flex  justify-between mt-4 p-6 border rounded-lg">
                      <div className="flex flex-col gap-4">
                          <p className="text-lg font-light">Broj telefona</p>

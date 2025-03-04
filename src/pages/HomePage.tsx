@@ -6,6 +6,8 @@ import '../ui-components/css/Filter.css'; // Import the CSS for CSSTransition an
 import Hero from "../ui-components/Hero";
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+import { toast } from "react-toastify";
 
 
 const HomePage  = () => {
@@ -14,6 +16,7 @@ const HomePage  = () => {
     const { brojNocenja} = useNavbarFilter();
     const [searchParams, setSearchParams] = useSearchParams();
     const { handleListingFilterChange } = useNavbarFilter();
+    const { user } = useUser();
     const navigate = useNavigate();
 
     const handleShowFilterChange = (value: boolean) => {
@@ -28,6 +31,11 @@ const HomePage  = () => {
     }
 
     const handleNavigateToListing = (id: number) => {
+        if(user === null) {
+            toast.error('Morate biti prijavljeni da biste videli detalje o smeštaju');
+            navigate('');
+            return;
+        }
         console.log("navigating");
         setCurrentMenuFilter('');
         navigate(`/listing/${id}`);
