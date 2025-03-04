@@ -25,12 +25,13 @@ const ProfilePage = () => {
 
         const fetchUser = async () => {
             try {
-                console.log(userId);
+                console.log("userId: " + userId);
                 const response = await fetch(`http://localhost:8080/api/user/${userId}`);
                 if (response.ok) {
                     const data = await response.json();
                     const {user} = data.data;
-                    setUserById(user);
+                    console.log("user: " + JSON.stringify(user));
+                    handleUserChange(user);
                     const createdAt = dayjs(user.createdAt);
                             const yearsPassed = dayjs().diff(createdAt, 'year');
                             setYearsHosting(yearsPassed + 3);
@@ -41,16 +42,25 @@ const ProfilePage = () => {
                 console.error('Error fetching data:', error);
             }
         };
-        fetchUser();
+
+        if(userId) {
+            fetchUser();
+        }
         
 
     }, [userId]);
+
+    const handleUserChange = (user: any) => {
+        setUserById(user);
+    };
+
+   
    
     return (
         <div className="container w-full h-screen flex justify-center items-center">
             <div className="flex w-full h-full items-center justify-center">
             {userById &&
-                <Profile user={userById} listingPage={false} yearsHosting={yearsHosting} ownProfile={true} handleShowAllReviews={handleShowAllReviews} />
+                <Profile user={userById} handleUserChange={handleUserChange} listingPage={false} yearsHosting={yearsHosting} ownProfile={true} handleShowAllReviews={handleShowAllReviews} />
             }
             </div>
             

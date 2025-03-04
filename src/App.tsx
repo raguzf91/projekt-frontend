@@ -12,6 +12,7 @@ import BookingPage from './pages/BookingPage';
 import CreateListingHomePage from './pages/create-listing/CreateListingHomePage';
 import CreateListingPage from './pages/create-listing/CreateListingPage';
 import ProfilePage from './pages/ProfilePage';
+import EditProfilePage from './pages/EditProfilePage';
 const App: React.FC = () => {
     const servicesFee = 0.1;
     const API_KEY = 'AIzaSyBT-yY4QFK8OxvU91Wsx6rkdsTaV68x_5M';
@@ -37,7 +38,8 @@ const App: React.FC = () => {
                             <Route path="booking" element={<BookingPage />} />
                             <Route path="become-a-host" element={<CreateListingHomePage />} />
                             <Route path="become-a-host/create-listing" element={<CreateListingPage API_KEY={API_KEY} isLoaded={isLoaded} />} />
-                            <Route path="profile" element={<ProfilePage />} />
+                            <Route path="profile/:id" element={<ProfilePage />} />
+                            <Route path="profile/:id/edit-profile" element={<EditProfilePage />} />
                         </Route>
                     </Routes>
                 </NavbarFilterProvider>

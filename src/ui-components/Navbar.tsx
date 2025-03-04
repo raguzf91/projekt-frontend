@@ -291,7 +291,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     };
 
     const handleNavigateToProfile = () => {
-        navigate('/profile');
+        navigate('/profile/'+user?.id);
     };
 
     const handleNavigateToCreateListing = () => {

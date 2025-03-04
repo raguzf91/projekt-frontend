@@ -24,7 +24,7 @@ interface User {
     profilePhoto: string;
     createdAt : string;
     gender: string;
-    averageRating: number;
+    averageRating: number | undefined;
     bio: string;
     numberOfReviews: number;
     city: string;
@@ -48,6 +48,7 @@ interface ProfileProps {
     yearsHosting: number;
     ownProfile: boolean;
     handleShowAllReviews: () => void;
+    handleUserChange: (user: User) => void;
     // MORAS DODATI ALLREVIEWS (NAPRAVI QUERY BACKEND KOJI CE POBROJATI SVE REVIEWS NA LISTINGE SA OVIM USER IDOM,  )
     // DODAJ AVERAGE RATING SCORE (NAPRAVI QUERY BACKEND KOJI CE POBROJATI SVE REVIEWS NA LISTINGE SA OVIM USER IDOM,  POBROJAT NJIHOVE OCJENE I IZRACUNATI PROSJEK)
     //
@@ -55,7 +56,7 @@ interface ProfileProps {
 
 
 
-const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownProfile, handleShowAllReviews}) => {
+const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownProfile, handleShowAllReviews, handleUserChange}) => {
     const [numberOfReviews, setNumberOfReviews] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [reviews , setReviews] = useState<Review[]>([]);
@@ -63,6 +64,10 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
     const toggleShowMore = (index: number) => {
         setExpandedReviewIndex(expandedReviewIndex === index ? -1 : index);
     };
+
+    useEffect(() => {
+        handleUserChange(user);
+    }, [handleUserChange, user]);
 
     const truncateText = (text: string, length: number) => {
         if (text.length <= length) return text;
@@ -77,7 +82,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
             if (response.ok) {
               const data = await response.json();
               const {reviews} = data.data;
-              console.log(reviews);
+              console.log("reviews" + reviews);
               const numberOfReviews = reviews.length;
               setNumberOfReviews(numberOfReviews);
               setReviews(reviews);
@@ -118,6 +123,10 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
         navigate("/");
     };
 
+    const handleNavigateToEditProfile = () => {
+        navigate(`/profile/${user?.id}/edit-profile/`);
+    };
+
 
     return (
         <>
@@ -132,7 +141,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                 <div className="general-info-container p-4  flex items-center shadow-2xl w-full rounded-3xl">
                     <div className="left-general-info-container p-4 flex flex-col items-center">	
                         <div>
-                            <img src={userIcon} alt="profile" className="rounded-full h-28 w-28 border-2" />
+                            <img src={user.profilePhoto} alt="profile" className="rounded-full h-28 w-28 border-2" />
                         </div>
                         <div className="flex flex-col items-center">
                             <h1 className="text-3xl font-bold">{user.firstName}</h1>
@@ -146,7 +155,7 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                        </div>
                        <div className='flex flex-col w-full pb-2 items-center justify-center  border-b mt-2 '>
                         <div className='flex items-center justify-center gap-1'>
-                            <p className='text-2xl font-bold'>{user.averageRating.toFixed(2)}</p>
+                            <p className='text-2xl font-bold'>{(user.averageRating ?? 0).toFixed(2)}</p>
                             <IoMdStar className='w-6 h-6' />
                         </div>
                             <p className='text-sm'>Ocjena</p>
@@ -156,6 +165,9 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                             <p className='text-sm text-center'>Godina domaćin</p>
                        </div>
                     </div>
+                </div>
+                <div className="edit-profile-button-container flex  mt-4">
+                    <button onClick={handleNavigateToEditProfile} className="edit-profile-button bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white p-2 rounded-2xl">Uredi profil</button>
                 </div>
             </div>
             <div className="right-profile-container flex flex-col w-2/3">
@@ -201,7 +213,11 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                             
                         </div>
                         <div>
-                                <p onClick={handleShowAllReviews} className='underline mt-8 cursor-pointer'>{`Prikaži sve recenzije ${listingPage ? 'za ovaj apartman' : 'za ovoga korisnika'} `}</p>
+                           {reviews.length > 0 ?  
+                           <p onClick={handleShowAllReviews} className='underline mt-8 cursor-pointer'>{`Prikaži sve recenzije ${listingPage ? 'za ovaj apartman' : 'za ovoga korisnika'} `}</p>
+                          
+                           : <p>Nema recenzija</p>}
+                                
                         </div>
                         
                     </div>
