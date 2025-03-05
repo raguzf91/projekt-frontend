@@ -2,16 +2,16 @@ import { Carousel, ConfigProvider } from "antd";
 import React from "react";
 import './css/HeroBox.css';
 import { IoMdStar } from "react-icons/io";
-import { FaHouseUser } from "react-icons/fa";
-import { useNavigate, useSearchParams } from "react-router-dom";
+
 
 interface Location {
     city: string;
     country: string;
-    address: string;
-    zipcode: string;
     latitude: number;
     longitude: number;
+    address: string;
+    zipCode: string;
+  
 }
 
 interface User {
@@ -40,9 +40,9 @@ interface HeroBoxProps {
         user: User;
         price: number;
         rating: number;
-        description: string;
-        reviews: string[];
         typeOfListing: string;
+        reservedFrom: string;
+        reservedUntil: string;
     };
     brojNocenja: number;
     navigateToListing: (id: number) => void;
@@ -95,6 +95,10 @@ const HeroBox: React.FC<HeroBoxProps> = ({ listing, brojNocenja, navigateToListi
                     </div>
                     
                 </div>
+                {(listing.reservedFrom  && listing.reservedUntil ) && 
+                    <p className="font-medium ">Rezervacija: <span className="font-semibold underline underline-offset-2">{listing.reservedFrom}</span> - <span className="font-semibold underline underline-offset-2">{listing.reservedUntil}</span></p>
+                }
+                
                 
                 <p className="text-sm font-bold mt-6">{`${listing.location.city}, ${listing.location.country}`}</p>
                 <p className="text-sm font-bold">{`Domaćin je ${listing.user.firstName}`}</p>

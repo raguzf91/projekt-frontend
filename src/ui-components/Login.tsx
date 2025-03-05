@@ -17,6 +17,7 @@ const Login = ({toggleLogin}:toggleProps) => {
     });
     const { setUser } = useUser();
     const navigate = useNavigate();
+    const [rememberMe, setRememberMe] = useState(false);
 
     useEffect(() => {
 
@@ -29,7 +30,7 @@ const Login = ({toggleLogin}:toggleProps) => {
     const handleNavigateToVerifyAccount = ( verificationType : string ) => {
         console.log('navigating to verify account' + verificationType);
         toggleLogin();
-        navigate(`/verify-account?verificationType=${verificationType}&email=${email}`);
+        navigate(`/verify-account?verificationType=${verificationType}&email=${email}&rememberMe=${rememberMe}`);
     };
 
 
@@ -113,11 +114,11 @@ const Login = ({toggleLogin}:toggleProps) => {
                             <div className="flex justify-between">
                                 <div className="flex items-start">
                                     <div className="flex items-center h-5">
-                                        <input id="remember" type="checkbox" value="" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-red-300 dark:bg-gray-600 dark:border-gray-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"  />
+                                        <input id="remember" onChange={(e) => setRememberMe(e.target.checked)} type="checkbox" value="true" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-red-300 dark:bg-gray-600 dark:border-gray-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"  />
                                     </div>
                                     <label htmlFor="remember" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Zapamti me</label>
                                 </div>
-                                <a href="#" className="text-sm text-red-700 hover:underline dark:text-red-500">Zaboravljena lozinka?</a>
+                               
                             </div>
                             <button type="submit" className="w-full text-white bg-rose-700 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">Prijavite se</button>
                             <div className="ili "  >

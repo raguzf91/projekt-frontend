@@ -22,9 +22,10 @@ import AddRemove from './AddRemove';
 
 interface FiltersProps {
     onShowFilterChange: (value: boolean) => void;
+    onSubmitFilters: (filters: any) => void;
 }
 
-const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
+const Filters: React.FC<FiltersProps> = ({onShowFilterChange, onSubmitFilters}) => {
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [rangeValue, setRangeValue] = useState<{ min: number; max: number }>({ min: 0, max: 1000 });
     const [spavaceSobe, setSpavaceSobe] = useState(0);
@@ -54,7 +55,7 @@ const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
         onShowFilterChange(showFilter);
     };
 
-    const handleRangeChange = (min: number, max: number) => {
+    const handleRangeChange = ({ min, max }: { min: number; max: number }) => {
         setRangeValue({ min, max });
         setResetSlider(false);
         console.log(resetSlider)
@@ -190,6 +191,31 @@ const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
     ];
 
 
+    const handleSubmitFilters = async () => {
+      
+    
+        const filters = {
+            minimalPrice: rangeValue.min,
+            maximalPrice: rangeValue.max,
+            rooms: [
+                {"bedrooms" : spavaceSobe},
+                {"beds" : kreveti},
+                {"bathrooms" : kupaonice}
+        ],
+            amenities: addedZnacajke,
+            location: addedLokacije,
+            typeOfListing: addedVrsteSmjestaja,
+            speaksLanguages: languages,
+        };
+
+        console.log("location", addedLokacije);
+        console.log("amenities", addedZnacajke);
+        console.log("type of listing", addedVrsteSmjestaja);
+        
+       onSubmitFilters(filters);
+    };
+
+
 
 
     return (
@@ -203,46 +229,12 @@ const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
                     <h1 className="font-bold text-2xl text-center">Filtri</h1>
                 </div>
             </div>
-            <div className="vrste-smjestaja m-4 flex-col justify-center items-center border-b-2 pb-8">
-                <h2 className="text-xl h-12 font-bold mb-4">Vrste smještaja</h2>
-                <div className="flex items-center justify-between rounded-3xl border-2 p-2">
-                    <button
-                        className={`text-lg font-semibold text-center rounded-3xl w-1/3 h-12 transition-all duration-100 ${
-                            activeButton === 'Sve vrste'
-                                ? 'border-slate-950 border-2'
-                                : 'hover:bg-slate-100'
-                        }`}
-                        onClick={() => handleButtonClick('Sve vrste')}
-                    >
-                        Sve vrste
-                    </button>
-                    <button
-                        className={`text-lg font-semibold text-center rounded-3xl w-1/3 h-12 transition-all duration-100 ${
-                            activeButton === 'Soba'
-                                ? 'border-slate-950 border-2'
-                                : 'hover:bg-slate-100'
-                        }`}
-                        onClick={() => handleButtonClick('Soba')}
-                    >
-                        Soba
-                    </button>
-                    <button
-                        className={`text-lg font-semibold text-center rounded-3xl w-1/3 h-12 transition-all duration-100 ${
-                            activeButton === 'Cijeli prostor'
-                                ? 'border-slate-950 border-2'
-                                : 'hover:bg-slate-100'
-                        }`}
-                        onClick={() => handleButtonClick('Cijeli prostor')}
-                    >
-                        Cijeli prostor
-                    </button>
-                </div>
-            </div>
+            
             <div className="raspon-cijena m-4 flex-col justify-center items-center border-b-2 pb-8">
                 <h2 className="text-xl h-12 font-bold">Raspon cijena</h2>
                 <h3 className="text-base">Cijena noćenja uključujući naknade i poreze</h3>
                 <div>
-                    <Slider min={rangeValue.min} max={rangeValue.max} currencyText="€" onChange={() => handleRangeChange} resetSlider = {resetSlider} />
+                    <Slider min={rangeValue.min} max={rangeValue.max} currencyText="€" onChange={() => handleRangeChange(rangeValue)} resetSlider={resetSlider} />
                 </div>
             </div>
             <div className="sobe-kreveti m-4 flex-col justify-center items-center border-b-2 pb-8">
@@ -348,6 +340,12 @@ const Filters: React.FC<FiltersProps> = ({onShowFilterChange}) => {
             <div className='izbrisi-sve mt-4 flex justify-center items-center sticky bottom-0 bg-white z-10 p-2'>
                 <button onClick={izbrisiSve} className='text-lg font-semibold text-center rounded-3xl w-1/3 h-12 transition-all duration-100 border-2 border-slate-950 hover:bg-slate-100'>Izbriši sve</button>
             </div>
+            {(spavaceSobe > 0 || kreveti > 0 || kupaonice > 0 || rangeValue.min > 0 || rangeValue.max < 1000 || addedZnacajke.length > 0 || addedLokacije.length > 0 || addedVrsteSmjestaja.length > 0 || languages.length > 0 ) && (
+            <div className='izbrisi-sve mt-4 flex justify-center items-center sticky bottom-0 bg-white z-10 p-2'>
+                 <button onClick={handleSubmitFilters} className='text-lg bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white p-2 rounded-2xl'>Filtriraj</button>
+             </div>
+            )}
+           
         </div>
     </div>
     );

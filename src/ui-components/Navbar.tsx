@@ -309,7 +309,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
         const accessToken = Cookies.get('access_token')
         try {
             const response = await fetch(`http://localhost:8080/api/auth/logout`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'AUTHORIZATION': `Bearer ${accessToken}`

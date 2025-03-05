@@ -167,7 +167,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const [lat, setLat] = useState<number>(0);
     const [lng, setLng] = useState<number>(0);
     const center = React.useMemo(() => ({ lat: 45.346241, lng: 19.008960 }), []);
-
+    const [isReserved, setIsReserved] = useState<boolean>(false);
      const [map, setMap] = useState<google.maps.Map | null>(null);
     const [secondaryTitle, setSecondaryTitle] = useState('');
      const { user } = useUser();
@@ -314,12 +314,24 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                 setLoading(false);
             }
         };
-      
+
+        const fetchReservation = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/${user?.id}/reservations/listing/${id}`);
+                const data = await response.json();
+                console.log("Reservation data: ", data);
+                const { isReserved } = data.data;
+                setIsReserved(isReserved);
+            } catch (error) {
+                console.error(error);
+            }
+        };
 
         
         fetchListing();
+        fetchReservation();
         
-    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress]);
+    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress, user?.id]);
     
     useEffect(() => {
        
@@ -739,10 +751,17 @@ return (
                                         </div>  
                                     </div>            
                             </div>
-                            <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
-                                <button onClick={handleNavigateToBookingPage} className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg '>Rezerviraj</button>
-                                <p className='mt-2'>Još vam nećemo ništa naplatiti</p>
-                            </div>
+                            {isReserved ? (
+                                <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
+                                    <button className='w-3/4 bg-red-500 text-white font-bold p-2 rounded-lg '>Oglas je već rezerviran</button>
+                                </div>
+                            ) : (
+                                <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
+                                    <button onClick={handleNavigateToBookingPage} className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg '>Rezerviraj</button>
+                                    <p className='mt-2'>Još vam nećemo ništa naplatiti</p>
+                                </div>
+                            )}
+                           
                             <div className='flex flex-col items-center justify-center cost-container mt-4 border-b-2 pb-4'>
                                 <div className='flex justify-between w-full mt-2 '>
                                      <p className='underline '>{`€${listing?.price} X ${reservationNights ? reservationNights : 1} noćenja`}</p>
@@ -842,7 +861,7 @@ return (
                         </div>  
                     </div>
                         <div className='meet-your-host-container mt-8 w-full'>
-                            <Profile  handleUserChange={() => {}} user={listing?.user} listingPage={true} yearsHosting = {yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
+                            <Profile handleUserChange={() => {}} listings={[]} user={listing?.user} listingPage={true} yearsHosting={yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
                         </div>  
                     </div>
                     

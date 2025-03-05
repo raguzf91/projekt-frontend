@@ -4,11 +4,13 @@ import { IoMdStar } from "react-icons/io";
 import Spinner from './Spinner';
 import { IoMdGlobe } from "react-icons/io";
 import { IoLanguage } from "react-icons/io5";
-import { IoIosArrowDropright } from "react-icons/io";
-import { IoIosArrowDropleft } from "react-icons/io";
 import logo from '../assets/images/logo.png';
 import { useNavigate } from 'react-router-dom';
-
+import HeroBox from './HeroBox';
+import Cookies from 'js-cookie';
+import dayjs from 'dayjs';
+import { useUser } from '../context/UserContext';
+import { toast } from 'react-toastify';
 
 
 interface User {
@@ -42,6 +44,48 @@ interface Review {
     createdAt: string;
 }
 
+interface Photo {
+  photoUrl: string;
+  name: string;
+  bedroomPhoto: boolean;
+}
+
+interface Location {
+  city: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  zipCode: string;
+}
+
+interface Listing {
+  id: number;
+  photos: Photo[];
+  title: string;
+  location: Location;
+  user: User;
+  price: number;
+  rating: number;
+  description: string;
+  numberOfNights: number;
+  typeOfListing: string;
+  reservedFrom: string;
+  reservedUntil: string;
+  reservationId: number;
+  canceled: boolean;
+}
+
+interface Reservation {
+  id: number;
+  listing: Listing;
+  reservedFrom: string;
+  reservedUntil: string;
+  canceled: boolean;
+}
+
+
+
 interface ProfileProps {
     user : User
     listingPage: boolean;
@@ -49,6 +93,8 @@ interface ProfileProps {
     ownProfile: boolean;
     handleShowAllReviews: () => void;
     handleUserChange: (user: User) => void;
+    listings: Listing[];
+    setReservations: React.Dispatch<React.SetStateAction<Reservation[]>>;
     // MORAS DODATI ALLREVIEWS (NAPRAVI QUERY BACKEND KOJI CE POBROJATI SVE REVIEWS NA LISTINGE SA OVIM USER IDOM,  )
     // DODAJ AVERAGE RATING SCORE (NAPRAVI QUERY BACKEND KOJI CE POBROJATI SVE REVIEWS NA LISTINGE SA OVIM USER IDOM,  POBROJAT NJIHOVE OCJENE I IZRACUNATI PROSJEK)
     //
@@ -56,10 +102,16 @@ interface ProfileProps {
 
 
 
-const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownProfile, handleShowAllReviews, handleUserChange}) => {
+const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownProfile, handleShowAllReviews, handleUserChange, listings, setReservations}) => {
     const [numberOfReviews, setNumberOfReviews] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [reviews , setReviews] = useState<Review[]>([]);
+    const accessToken = Cookies.get('access_token');
+    const { user: currentUser } = useUser();
+
+    const currentDate = dayjs().format('YYYY-MM-DD');
+
+
     const [expandedReviewIndex , setExpandedReviewIndex] = useState<number>(-1);
     const toggleShowMore = (index: number) => {
         setExpandedReviewIndex(expandedReviewIndex === index ? -1 : index);
@@ -128,10 +180,38 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
     };
 
 
+    const handleCancelReservation = async (reservationId: number) => {
+      console.log("reservationId: " + reservationId);
+      try {
+        const response = await fetch(`http://localhost:8080/api/user/${currentUser?.id}/reservations/${reservationId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'AUTHORIZATION': `Bearer ${accessToken}` 
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log("data: " + JSON.stringify(data));
+          const { reservations } = data.data;
+          console.log("reservations: " + JSON.stringify(reservations));
+          setReservations(reservations);
+          toast.success('Rezervacija je uspješno otkazana');
+        } else {
+          console.error('Error fetching data:', response.statusText);
+          toast.error('Došlo je do greške prilikom otkazivanja rezervacije');
+        }
+      } catch (error) {
+          console.error('Error fetching data:', error);
+      }
+    };
+     
+
+
     return (
         <>
         {loading ? <p><Spinner loading={loading}/></p> :
-          <section className='flex flex-col w-full h-full'>
+          <section className='flex flex-col w-full h-fit'>
             <header className='flex justify-start items-center w-full p-4'>
                     <img src={logo} onClick={handleNavigateToHome} className='p-8 2xl:w-48 xl:w-32 md:w-32 md:mr-6 cursor-pointer' alt="logo" />
                 </header>
@@ -166,9 +246,12 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                        </div>
                     </div>
                 </div>
-                <div className="edit-profile-button-container flex  mt-4">
+                {ownProfile && 
+                  <div className="edit-profile-button-container flex  mt-4">
                     <button onClick={handleNavigateToEditProfile} className="edit-profile-button bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white p-2 rounded-2xl">Uredi profil</button>
-                </div>
+                   </div>
+                }
+                
             </div>
             <div className="right-profile-container flex flex-col w-2/3">
                     <h1 className='text-4xl mb-4 font-bold'>{`Tko je ${user?.firstName}`}</h1>
@@ -219,6 +302,30 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                            : <p>Nema recenzija</p>}
                                 
                         </div>
+                        <div className="listings flex flex-col mt-8">
+                            <h2 className='text-3xl'>{`${ownProfile ? 'Moje' : `${user?.gender === 'male' ? 'Njegove' : 'Njezine'}`} rezervacije`}</h2>
+                            {listings.length > 0 ? 
+                            <div className="flex flex-wrap gap-4 mt-4">
+                                {listings.map((listing, index) => (
+                                  <div className='flex flex-col w-1/3'>
+                                      <HeroBox  key={index} listing={listing} brojNocenja={listing.numberOfNights} navigateToListing={() => navigate(`/listing/${listing.id}`)} />
+                                        {listing.canceled ? <p>Rezervacija je otkazana</p> : (
+                                          dayjs(currentDate).isBefore(dayjs(listing.reservedFrom)) ? (
+                                            <button onClick={() => handleCancelReservation(listing.reservationId)} className=' bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white p-4 rounded-lg shadow-lg mt-4 w-1/2'>Otkaži rezervaciju</button> 
+                                         ) : dayjs(currentDate).isAfter(dayjs(listing.reservedUntil)) ? (
+                                           <p>Rezervacija je završila</p>
+                                         ) : <p>Rezervacija je u tijeku</p>
+                                        )}
+                                       
+                                        
+                                        
+                                  </div>
+                                    
+                                ))}
+                            </div> : <p>Nema rezervacija</p> 
+                          }
+                             
+                        </div>
                         
                     </div>
 
@@ -232,6 +339,5 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
     );
 };
 export default Profile;
-
 
 

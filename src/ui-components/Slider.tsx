@@ -28,13 +28,6 @@ const Slider: React.FC<SliderProps> = ({
 }, [min, max]);
 
 useEffect(() => {
-    if(resetSlider) {
-        resetRangeSlider();
-    }
-}, [resetSlider]);
-
-
-
     const resetRangeSlider = () => {
         setMinValue(min); // Reset min value to min
         setMaxValue(max); // Reset max value to max
@@ -43,6 +36,15 @@ useEffect(() => {
         }
         onChange({ min, max }); // Call onChange with min and max values
     };
+
+    if(resetSlider) {
+        resetRangeSlider();
+    }
+}, [resetSlider, min, max, onChange]);
+
+
+
+    
 
  
 

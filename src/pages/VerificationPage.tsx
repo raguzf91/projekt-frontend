@@ -16,6 +16,7 @@ const VerificationPage = () => {
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
     const email = searchParams.get('email');
+    const rememberMe = searchParams.get('rememberMe');
     const [loading, setLoading] = useState(false);
     const [keyInput, setKeyInput] = useState('');
     const [apiUrl, setApiUrl] = useState('');
@@ -75,8 +76,11 @@ const VerificationPage = () => {
                         role: data.data.user.roleName,
                     };
 
-                    // Save user in session storage
-                    sessionStorage.setItem('user', JSON.stringify(user));
+                    // Save user in session storage samo ako je kliknio remember me 
+                    if(rememberMe === 'true') {
+                        sessionStorage.setItem('user', JSON.stringify(user));
+                    };
+                    
 
                     // Update user context
                     setUser(user);

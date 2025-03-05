@@ -14,13 +14,15 @@ const HomePage  = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [currentMenuFilter, setCurrentMenuFilter] = useState<string>('');
     const { brojNocenja} = useNavbarFilter();
+    const [filters, setFilters] = useState<any>(null);
+
     const [searchParams, setSearchParams] = useSearchParams();
     const { handleListingFilterChange } = useNavbarFilter();
+
     const { user } = useUser();
     const navigate = useNavigate();
 
     const handleShowFilterChange = (value: boolean) => {
-        console.log("filter filter: "+value);
         setShowFilter(value);
     };
 
@@ -41,6 +43,12 @@ const HomePage  = () => {
         navigate(`/listing/${id}`);
     };
 
+    useEffect(() => {
+        if (filters) {
+           handleShowFilterChange(false);
+          }
+    }, [filters]);
+
 
    
     
@@ -58,10 +66,10 @@ const HomePage  = () => {
             >
                 <div className="fixed inset-0 flex items-center justify-center z-40 ">
                     <div className="absolute inset-0  bg-black opacity-50"></div>
-                    <Filters onShowFilterChange={handleShowFilterChange} />
+                    <Filters onShowFilterChange={handleShowFilterChange} onSubmitFilters={setFilters} />
                 </div>
             </CSSTransition>
-            <Hero brojNocenja={brojNocenja} menuFilter={currentMenuFilter} navigateToListing={handleNavigateToListing} />
+            <Hero filters={filters} brojNocenja={brojNocenja} menuFilter={currentMenuFilter} navigateToListing={handleNavigateToListing} />
         </main>
         </>
         

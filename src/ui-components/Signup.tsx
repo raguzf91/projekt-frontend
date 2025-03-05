@@ -68,6 +68,13 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
                 body: JSON.stringify(registerRequest)
             });
 
+
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                toast.error('Lozinka mora sadržavati najmanje 8 znakova, jedno veliko slovo, jedno malo slovo i jedan broj');
+                return;
+            };
+
            
             if (response.ok) {
                 const data = await response.json();
@@ -87,6 +94,18 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
             toast.error('Greška prilikom registracije');
             console.error(error);
             
+        }
+    };
+
+
+    const handleDateOfBirthChange = (dateOfBirth : string) => {
+        const currentDate = new Date();
+        const selectedDate = new Date(dateOfBirth);
+        if(selectedDate > currentDate) {
+            toast.error('Niste se mogli roditi u budučnosti');
+            return;
+        } else {
+            setDateOfBirth(dateOfBirth);
         }
     };
 
@@ -136,7 +155,7 @@ const Signup = ({toggleRegister, handleHideNavbar}:toggleProps) => {
                             </div>
                             <div>
                                 <label htmlFor="dateOfBirth" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Datum rođenja</label>
-                                <input type="date" name="dateOfBirth" id="dateOfBirth" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-900 focus:border-gray-900 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"  required />
+                                <input type="date" name="dateOfBirth" id="dateOfBirth" value={dateOfBirth} onChange={(e) => handleDateOfBirthChange(e.target.value)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-900 focus:border-gray-900 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"  required />
                             </div>
                             <div>
                             <label htmlFor="gender" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Spol</label>
