@@ -8,16 +8,22 @@ import { useNavbarFilter } from '../context/NavbarFilterProvider';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { toast } from "react-toastify";
+import { useOutletContext } from 'react-router-dom';
 
+interface OutletContextType {
+    listings: any[];
+    setListings: (listings: any[]) => void;
+  }
+  
 
 const HomePage  = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [currentMenuFilter, setCurrentMenuFilter] = useState<string>('');
     const { brojNocenja} = useNavbarFilter();
     const [filters, setFilters] = useState<any>(null);
-
     const [searchParams, setSearchParams] = useSearchParams();
     const { handleListingFilterChange } = useNavbarFilter();
+    const { listings, setListings } = useOutletContext<OutletContextType>();
 
     const { user } = useUser();
     const navigate = useNavigate();
@@ -25,6 +31,8 @@ const HomePage  = () => {
     const handleShowFilterChange = (value: boolean) => {
         setShowFilter(value);
     };
+
+  
 
 
     const handleMenuFilterChange = (value : string) => {
@@ -49,6 +57,8 @@ const HomePage  = () => {
           }
     }, [filters]);
 
+   
+
 
    
     
@@ -69,7 +79,7 @@ const HomePage  = () => {
                     <Filters onShowFilterChange={handleShowFilterChange} onSubmitFilters={setFilters} />
                 </div>
             </CSSTransition>
-            <Hero filters={filters} brojNocenja={brojNocenja} menuFilter={currentMenuFilter} navigateToListing={handleNavigateToListing} />
+            <Hero filteredListings={listings || []} filters={filters} brojNocenja={brojNocenja} menuFilter={currentMenuFilter} navigateToListing={handleNavigateToListing} />
         </main>
         </>
         

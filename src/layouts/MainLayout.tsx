@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "../ui-components/Navbar";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -14,8 +14,7 @@ interface MainLayoutProps {
   
 const MainLayout: React.FC<MainLayoutProps> = ({ isLoaded }) => {
     const { setBrojNocenja, handleShowSmallScFilter,  gosti, showFilterSmallSc } = useNavbarFilter();
-    
-
+    const [listings, setListings] = useState<any[]>([]);
 
 
     return (
@@ -36,9 +35,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ isLoaded }) => {
                 onShowFilterChange={handleShowSmallScFilter}
                 setBrojNocenja={setBrojNocenja}
                 numberOfGuests={gosti}
-                isLoaded={isLoaded} 
+                isLoaded={isLoaded}
+                setListings={setListings}
+
             />
-            <Outlet />
+            <Outlet context={{ listings, setListings }} />
             <FooterMenu/>
             <ToastContainer />
         </SearchParamsProvider>

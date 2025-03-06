@@ -10,14 +10,26 @@ interface HeroProps {
     menuFilter: string;
     navigateToListing: (id: number) => void;
     filters: any;
+    filteredListings: any[];
 };
 
 
 
-const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing, filters}) => {
+const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing, filters, filteredListings}) => {
 
-    const [listings, setListings] = useState<[]>([]);
+    const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if(filteredListings.length > 0) {
+            setListings(filteredListings);
+            setLoading(false);
+        }
+    }, []);
+
+
+
+    
 
     const fetchAllListings = useCallback(async () => {
         if(filters !== null) {

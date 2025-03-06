@@ -44,9 +44,10 @@ interface NavbarProps {
     setBrojNocenja: (value: number) => void;
     numberOfGuests: number;
     isLoaded: boolean; 
+    setListings: (listings: any[]) => void;
 }
 
-const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isLoaded}) => {
+const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isLoaded, setListings}) => {
     const { setUser } = useUser();
     const { brojNocenja, regija, dolazak, odlazak, gosti, handleShowSmallScFilter, showFilterSmallSc, setShowFilterSmallSc, handleListingFilterChange, location, period } = useNavbarFilter();
     const [loginVisible, setLoginVisible] = useState(false);
@@ -68,8 +69,8 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
     const navbarRef = useRef<HTMLDivElement>(null);
     const datepickerRef = useRef<HTMLDivElement>(null);
     const { hideNavbar } = useNavbarFilter();
-    
-
+    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+    const autocompleteContainerRef = useRef<HTMLDivElement>(null);
     const { searchParams, setSearchParams } = useSearchParamsContext();
     const verificationType = searchParams.get('verificationType');
     const activateLogin = searchParams.get('activateLogin');
@@ -105,7 +106,8 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
     const handleClickOutside = (event: MouseEvent) => {
         if (
             navbarRef.current && !navbarRef.current.contains(event.target as Node) &&
-            datepickerRef.current && !datepickerRef.current.contains(event.target as Node)
+            datepickerRef.current && !datepickerRef.current.contains(event.target as Node) &&
+            (autocompleteContainerRef.current && autocompleteContainerRef.current.contains(event.target as Node))
         ) {
             console.log("outside click");
             setSearchActive(false);
@@ -251,7 +253,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
 
     const disableDolazak: RangePickerProps['disabledDate'] = (current) => {
         // Can not select days before today and today
-        return current && current > dayjs(odlazakRef, "DD-MM-YYYY").endOf('day');
+        return current && (current > dayjs(odlazakRef, "DD-MM-YYYY").endOf('day') || current < dayjs().startOf('day'));
       };
 
       const disableOdlazak: RangePickerProps['disabledDate'] = (current) => {
@@ -259,13 +261,38 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
         return current && current < dayjs(dolazakRef, "DD-MM-YYYY").endOf('day');
       };
 
-    const handleSendSearch = () => {
+    const handleSendSearch = async () => {
         handleListingFilterChange(regijaRef, dolazakRef, odlazakRef, gostiRef);
         setSearchActive(false);
         setWhereActive(false);
         setWhoActive(false);
+        const filters = [
+            {fullAddress: fullAddress ? fullAddress : ''},
+            {arrival: dolazakRef ? dolazakRef : ''},
+            {departure: odlazakRef ? odlazakRef : ''},
+            {guests: gostiRef ? gostiRef : 1},
+        ]
+        console.log(filters);
+        
+        try {
+            if(filters === null) {
+                toast.error('Niste unijeli sve podatke!');
+                return;
+            } 
+            const apiUrl = `http://localhost:8080/api/listing/filter?${filters.map((filter: any) => Object.keys(filter).map(key => `${key}=${filter[key]}`).join('&')).join('&')}`;
+            console.log(apiUrl);
+            const response = await fetch(apiUrl);
+            const listingsResponse = await response.json();
+            const { data } = listingsResponse;
+            const { listings } = data;
+            setListings(listings);
+        } catch (error) {
+            console.error(error);
+        } 
+        
         toast.success('Pretraga poslana!');
-    };
+    }; 
+   
 
     const isExtraSmallScreen = useMediaQuery({ query: '(max-width: 486px)' });
 
@@ -358,54 +385,33 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
     const [country, setCountry] = useState('');
     const [postalCode, setPostalCode] = useState('');
     const [fullAddress, setFullAddress] = useState('');
+    
     const inputRef = useRef(null);
 
-    const handleOnPlacesChanged = () => {
-            const address = inputRef.current.getPlaces();
-            console.log(address[0].address_components);
-            for (let i = 0; i < address[0].address_components.length; i++) {
-                if(address[0].address_components[i].types.includes('street_number')) {
-                    listingAddress.streetNumber = address[0].address_components[i].long_name;
-                    setStreetNumber(listingAddress.streetNumber);
-                    
-                };
-    
-                if(address[0].address_components[i].types.includes('route')) {
-                    listingAddress.street = address[0].address_components[i].long_name;
-                    setStreet(listingAddress.street);
-                    
-                };
-    
-                if(address[0].address_components[i].types.includes('locality') || address[0].address_components[i].types.includes('postal_town')) {
-                    listingAddress.city = address[0].address_components[i].long_name;
-                    setCity(listingAddress.city);
-                    
-                };
-    
-                if(address[0].address_components[i].types.includes('country')) {
-                    listingAddress.country = address[0].address_components[i].long_name;
-                    setCountry(listingAddress.country);
-                    
-                };
-    
-                if(address[0].address_components[i].types.includes('postal_code')) {
-                    listingAddress.postalCode = address[0].address_components[i].long_name;
-                    setPostalCode(listingAddress.postalCode);
-                    
-                };
-    
-                
-                //console.log(address[0].address_components[i]);
+        const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setFullAddress(e.target.value);
+          };
+
+          const onAutocompleteLoad = (autocomplete: google.maps.places.Autocomplete) => {
+            autocompleteRef.current = autocomplete;
+          };
+
+          const onPlaceChanged = () => {
+            console.log(fullAddress);
+            if (autocompleteRef.current !== null) {
+              const place = autocompleteRef.current.getPlace();
+              console.log(place);
+              if (place.formatted_address) {
+                setFullAddress(place.formatted_address);
+                setRegijaRef(place.formatted_address);
+              }
             }
-    
-            
-            const parts = [street, streetNumber, city, country, postalCode];
-            const filteredParts = parts.filter((part) => part && part.trim() !== '');
-            setFullAddress(filteredParts.join(', '));   
-            
-            
-            
-        };
+          };
+        
+
+        
+
+
 
 
     
@@ -452,18 +458,11 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
                     >
                     
                     <div className={`middle-navbar ${ismdScreen || hideNavbar ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
-                    <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
-                        <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
+                    <div ref={autocompleteContainerRef} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                         {isLoaded && (
-                                    <StandaloneSearchBox
-                                        onLoad={(ref) => inputRef.current = ref}
-                                        onPlacesChanged={handleOnPlacesChanged}
-                                    >
-                                        <Autocomplete className="flex justify-center "  >
-
-                                            <input value={fullAddress}  type="text" placeholder="Unesite adresu" className=" appearance-none focus:outline-none focus:border-2 focus:border-black rounded-2xl text-lg p-4 w-1/4   border-2 border-gray-300 absolute mt-6  z-50 shadow-lg"  />
+                                        <Autocomplete onLoad={onAutocompleteLoad} onPlaceChanged={onPlaceChanged} className="flex justify-center">
+                                            <input  onChange={handleInputChange} value={fullAddress}  type="text" placeholder="Unesite adresu" className=" appearance-none focus:outline-none focus:border-2 focus:border-black rounded-2xl text-lg p-4 w-full border-2 border-gray-300 shadow-lg"  />
                                         </Autocomplete>
-                                    </StandaloneSearchBox>
                                    
                             )}
                         
