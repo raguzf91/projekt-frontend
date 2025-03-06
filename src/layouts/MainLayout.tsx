@@ -7,7 +7,12 @@ import { CSSTransition } from 'react-transition-group';
 import { SearchParamsProvider } from '../context/SearchParamsContext';
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
 import FooterMenu from "../ui-components/FooterMenu";
-const MainLayout = () => {
+interface MainLayoutProps {
+    isLoaded: boolean;
+  }
+
+  
+const MainLayout: React.FC<MainLayoutProps> = ({ isLoaded }) => {
     const { setBrojNocenja, handleShowSmallScFilter,  gosti, showFilterSmallSc } = useNavbarFilter();
     
 
@@ -23,7 +28,7 @@ const MainLayout = () => {
             >
                 <div className="fixed inset-0 flex items-center justify-center z-40 ">
                     <div className="absolute inset-0 bg-black opacity-50"></div>
-                    <Filters onShowFilterChange={handleShowSmallScFilter} />
+                    <Filters  onShowFilterChange={handleShowSmallScFilter} />
                 </div>
             </CSSTransition>
 
@@ -31,6 +36,7 @@ const MainLayout = () => {
                 onShowFilterChange={handleShowSmallScFilter}
                 setBrojNocenja={setBrojNocenja}
                 numberOfGuests={gosti}
+                isLoaded={isLoaded} 
             />
             <Outlet />
             <FooterMenu/>

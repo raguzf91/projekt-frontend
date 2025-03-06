@@ -24,17 +24,29 @@ import "./css/Navbar.css"
 import {toast} from 'react-toastify';
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarFilter } from '../context/NavbarFilterProvider';
-import { Autocomplete } from '@react-google-maps/api';
+import { Autocomplete, StandaloneSearchBox } from '@react-google-maps/api';
 import { useUser } from '../context/UserContext';
 import { useSearchParamsContext } from '../context/SearchParamsContext';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
+
+interface ListingAddress {
+    streetNumber: string;
+    street: string;
+    city: string;
+    country: string;
+    postalCode: string;
+}
+
+
 interface NavbarProps {
     onShowFilterChange: (value: boolean) => void;
     setBrojNocenja: (value: number) => void;
     numberOfGuests: number;
+    isLoaded: boolean; 
 }
-const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) => {
+
+const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isLoaded}) => {
     const { setUser } = useUser();
     const { brojNocenja, regija, dolazak, odlazak, gosti, handleShowSmallScFilter, showFilterSmallSc, setShowFilterSmallSc, handleListingFilterChange, location, period } = useNavbarFilter();
     const [loginVisible, setLoginVisible] = useState(false);
@@ -146,7 +158,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
     };
 
     const handleWhereActive = () => {
-        setWhereActive(!whereActive);
+        return;
         
     };
 
@@ -333,6 +345,68 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
         }
     };
 
+    const listingAddress: ListingAddress = {
+        streetNumber: '',
+        street: '',
+        city: '',
+        country: '',
+        postalCode: ''
+    };
+    const [streetNumber, setStreetNumber] = useState('');
+    const [street, setStreet] = useState('');
+    const [city, setCity] = useState('');
+    const [country, setCountry] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [fullAddress, setFullAddress] = useState('');
+    const inputRef = useRef(null);
+
+    const handleOnPlacesChanged = () => {
+            const address = inputRef.current.getPlaces();
+            console.log(address[0].address_components);
+            for (let i = 0; i < address[0].address_components.length; i++) {
+                if(address[0].address_components[i].types.includes('street_number')) {
+                    listingAddress.streetNumber = address[0].address_components[i].long_name;
+                    setStreetNumber(listingAddress.streetNumber);
+                    
+                };
+    
+                if(address[0].address_components[i].types.includes('route')) {
+                    listingAddress.street = address[0].address_components[i].long_name;
+                    setStreet(listingAddress.street);
+                    
+                };
+    
+                if(address[0].address_components[i].types.includes('locality') || address[0].address_components[i].types.includes('postal_town')) {
+                    listingAddress.city = address[0].address_components[i].long_name;
+                    setCity(listingAddress.city);
+                    
+                };
+    
+                if(address[0].address_components[i].types.includes('country')) {
+                    listingAddress.country = address[0].address_components[i].long_name;
+                    setCountry(listingAddress.country);
+                    
+                };
+    
+                if(address[0].address_components[i].types.includes('postal_code')) {
+                    listingAddress.postalCode = address[0].address_components[i].long_name;
+                    setPostalCode(listingAddress.postalCode);
+                    
+                };
+    
+                
+                //console.log(address[0].address_components[i]);
+            }
+    
+            
+            const parts = [street, streetNumber, city, country, postalCode];
+            const filteredParts = parts.filter((part) => part && part.trim() !== '');
+            setFullAddress(filteredParts.join(', '));   
+            
+            
+            
+        };
+
 
     
 
@@ -380,9 +454,18 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja}) =>
                     <div className={`middle-navbar ${ismdScreen || hideNavbar ? 'hidden' : 'relative xl:ml-18 2xl:ml-24 2xl:mr-24 3xl:ml-24 3xl:mr-24 rounded-3xl border flex items-center '}`}>
                     <div onClick={() => { handleSearchActive(); handleWhereActive(); }} className="input-field p-2 flex flex-col hover:bg-gray-200 hover:cursor-pointer rounded-3xl mr-2">
                         <label htmlFor="default-input-1" className="block pl-2 text-sm font-semibold text-gray-900 dark:text-white align-bottom">Gdje</label>
-                        <Autocomplete>
-                            <input type="text" id="default-input-1" placeholder={`${regijaRef === '' ? 'Pretraži destinaciju' : regijaRef}`} className="outline-none 2xl:text-md rounded-3xl   border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white align-top p-2" />
-                        </Autocomplete>
+                        {isLoaded && (
+                                    <StandaloneSearchBox
+                                        onLoad={(ref) => inputRef.current = ref}
+                                        onPlacesChanged={handleOnPlacesChanged}
+                                    >
+                                        <Autocomplete className="flex justify-center "  >
+
+                                            <input value={fullAddress}  type="text" placeholder="Unesite adresu" className=" appearance-none focus:outline-none focus:border-2 focus:border-black rounded-2xl text-lg p-4 w-1/4   border-2 border-gray-300 absolute mt-6  z-50 shadow-lg"  />
+                                        </Autocomplete>
+                                    </StandaloneSearchBox>
+                                   
+                            )}
                         
                         
                     </div>

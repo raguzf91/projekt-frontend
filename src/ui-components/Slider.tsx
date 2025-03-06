@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './css/Slider.css';
 
+
+
 interface SliderProps {
     min: number;
     max: number;
@@ -117,54 +119,7 @@ useEffect(() => {
 
     return (
         <div>
-            <div>
-                <h3 className='mt-4 mb-6 font-semibold text-slate-600'>Cijena</h3>
-                <div className='relative '>
-                    <input 
-                        type="range" 
-                        min={min} 
-                        max={max} 
-                        value={minValue}
-                        onChange={handleMinChange} 
-                        className='absolute w-full '
-                        style={{
-                            background: `linear-gradient(to right, #ddd ${getMinThumbPosition()}%, #bd244a ${getMinThumbPosition()}%, #bd244a ${getMaxThumbPosition()}%, #ddd ${getMaxThumbPosition()}%)`
-                        }}
-                        ref={sliderRef} // Attach the reference to the slider
-                    />
-                    <input 
-                        type="range" 
-                        min={min} 
-                        max={max} 
-                        value={maxValue}
-                        onChange={handleMaxChange} 
-                        className='absolute w-full '
-                        style={{
-                            background: 'none'
-                        }}
-                    />
-                </div>
-            </div>
-            <div className='flex justify-between'>
-                <div>
-                    <h3 className='mt-4 mb-2 font-semibold text-slate-600'>Minimalno</h3>
-                    <input 
-                        type="text" 
-                        value={`${currencyText}${minValue}`} // Use minValue for input value
-                        onChange={handleMinInputChange} // Handle input change
-                        className='border-2 border-slate-950 rounded-xl w-20 h-12 text-center placeholder-black focus:border-black focus:border-4 outline-none transition-all duration-75'
-                    />
-                </div>
-                <div>
-                    <h3 className='mt-4 mb-2 font-semibold text-slate-600'>Maksimalno</h3>
-                    <input 
-                        type="text" 
-                        value={`${currencyText}${maxValue}`} // Use maxValue for input value
-                        onChange={handleMaxInputChange} // Handle input change
-                        className='border-2 border-slate-950 rounded-xl w-20 h-12 text-center placeholder-black focus:border-black focus:border-4 outline-none transition-all duration-75'
-                    />
-                </div>
-            </div>
+            
         </div>
     );
 }

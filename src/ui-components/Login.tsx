@@ -54,7 +54,7 @@ const Login = ({toggleLogin}:toggleProps) => {
                     const verificationTypeRef = data.data.activationType;
                     const {id, email, roleName} = user;
                     // Update user context
-                    setUser({ id: id, email: email, role: roleName });
+                    
                     toast.info('Uspješno ste se prijavili');
                     handleNavigateToVerifyAccount(verificationTypeRef);
                 } else {

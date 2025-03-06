@@ -30,7 +30,7 @@ const App: React.FC = () => {
             <UserProvider>
                 <NavbarFilterProvider>
                     <Routes>
-                        <Route path="/" element={<MainLayout />}>
+                        <Route path="/" element={<MainLayout isLoaded={isLoaded} />}>
                             <Route index element={<HomePage />} />
                             <Route path="listing/:id" element={<ListingPage isLoaded={isLoaded} API_KEY={API_KEY} servicesFee={servicesFee} />} />
                             <Route path="*" element={<NotFoundPage />} />

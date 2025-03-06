@@ -41,7 +41,6 @@ const VerificationPage = () => {
                 setApiUrl(`http://localhost:8080/api/auth/activate/account/${email}/${keyInput}`);
                 if(apiUrl !== '') {
                     const response = await fetch(apiUrl);
-                    const data = await response.json();
             if (response.ok) {
                 if(verificationType === 'ACTIVATE_ACCOUNT') {
                     toast.success('Uspješno ste aktivirali račun');
@@ -67,6 +66,7 @@ const VerificationPage = () => {
                 if(verificationType === 'VERIFY_ACCOUNT') {
                     toast.success('Uspješno ste se prijavili');
                     setSearchParams({});
+                    
                     Cookies.set('access_token', data.data.access_token);
                     Cookies.set('refresh_token', data.data.refresh_token);
 
@@ -84,8 +84,6 @@ const VerificationPage = () => {
 
                     // Update user context
                     setUser(user);
-                   
-                    
                     navigate('/');
                 }
                 
