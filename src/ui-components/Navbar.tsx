@@ -266,11 +266,23 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
         setSearchActive(false);
         setWhereActive(false);
         setWhoActive(false);
+        if(dolazakRef != '' && odlazakRef == '') {
+            toast.error('Niste unijeli datum odlaska!');
+            return;
+        } else if(dolazakRef == '' && odlazakRef != '') {
+            toast.error('Niste unijeli datum dolaska!');
+            return;
+        } else if(dolazakRef == '' && odlazakRef == '') {
+            toast.error('Niste unijeli datume dolaska i odlaska!');
+            return;
+        }
+
+
         const filters = [
             {fullAddress: fullAddress ? fullAddress : ''},
             {arrival: dolazakRef ? dolazakRef : ''},
             {departure: odlazakRef ? odlazakRef : ''},
-            {guests: gostiRef ? gostiRef : 1},
+            {numberOfGuests: gostiRef ? gostiRef : 1},
         ]
         console.log(filters);
         
@@ -390,6 +402,7 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setFullAddress(e.target.value);
+            setRegijaRef(e.target.value);
           };
 
           const onAutocompleteLoad = (autocomplete: google.maps.places.Autocomplete) => {
@@ -399,11 +412,64 @@ const Navbar : React.FC<NavbarProps> = ({onShowFilterChange, setBrojNocenja, isL
           const onPlaceChanged = () => {
             console.log(fullAddress);
             if (autocompleteRef.current !== null) {
-              const place = autocompleteRef.current.getPlace();
-              console.log(place);
-              if (place.formatted_address) {
-                setFullAddress(place.formatted_address);
-                setRegijaRef(place.formatted_address);
+                const address = inputRef.current.getPlaces();
+              console.log(address);
+              const fullAddressBuilder = [];
+              if (address.formatted_address) {
+                for (let i = 0; i < address[0].address_components.length; i++) {
+                    if(address[0].address_components[i].types.includes('street_number')) {
+                        listingAddress.streetNumber = address[0].address_components[i].long_name;
+                        setStreetNumber(listingAddress.streetNumber);
+                        
+                    };
+        
+                    if(address[0].address_components[i].types.includes('route')) {
+                        listingAddress.street = address[0].address_components[i].long_name;
+                        setStreet(listingAddress.street);
+                        
+                    };
+        
+                    if(address[0].address_components[i].types.includes('locality') || address[0].address_components[i].types.includes('postal_town')) {
+                        listingAddress.city = address[0].address_components[i].long_name;
+                        setCity(listingAddress.city);
+                        
+                    };
+        
+                    if(address[0].address_components[i].types.includes('country')) {
+                        listingAddress.country = address[0].address_components[i].long_name;
+                        setCountry(listingAddress.country);
+                        
+                    };
+        
+                    if(address[0].address_components[i].types.includes('postal_code')) {
+                        listingAddress.postalCode = address[0].address_components[i].long_name;
+                        setPostalCode(listingAddress.postalCode);
+                        
+                    };
+        
+                    
+                    //console.log(address[0].address_components[i]);
+                }
+        
+                if(listingAddress.city != '') {
+                    fullAddressBuilder.push(listingAddress.city);
+                }
+                if(listingAddress.street != '') {
+                    fullAddressBuilder.push(listingAddress.street);
+                }
+                if(listingAddress.streetNumber != '') {
+                    fullAddressBuilder.push(listingAddress.streetNumber);
+                }
+                if(listingAddress.postalCode != '') {
+                    fullAddressBuilder.push(listingAddress.postalCode);
+                }
+                if(listingAddress.country != '') {
+                    fullAddressBuilder.push(listingAddress.country);
+                }
+                const fullAddress = fullAddressBuilder.join(', ');
+                console.log(fullAddress);
+                setFullAddress(fullAddress);
+                setRegijaRef(address.formatted_address);
               }
             }
           };

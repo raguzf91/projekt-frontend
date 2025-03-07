@@ -25,7 +25,7 @@ const Hero : React.FC<HeroProps> = ({brojNocenja, menuFilter, navigateToListing,
             setListings(filteredListings);
             setLoading(false);
         }
-    }, []);
+    }, [filteredListings]);
 
 
 

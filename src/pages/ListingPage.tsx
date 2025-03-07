@@ -52,6 +52,8 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import { useUser } from '../context/UserContext';
 import { FaTrash } from "react-icons/fa";
+import isBetween from 'dayjs/plugin/isBetween';
+
 interface ListingPageProps {
     servicesFee: number;
     isLoaded: boolean;
@@ -136,6 +138,7 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
         amenities: Amenity[]
         cleaningFee: number;
     }
+    dayjs.extend(isBetween);
 
     const [listing, setListing] = useState<Listing | null>(null);
     const [loading, setLoading] = useState(true);
@@ -164,13 +167,16 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const [totalNightsCost, setTotalNightsCost] = useState<number>(0);
     const [totalCleaningFeeCost, setTotalCleaningFeeCost] = useState<number>(0);
     const [totalServicesFeeCost, setTotalServicesFeeCost] = useState<number>(0);
+    const [userIsListingOwner, setUserIsListingOwner] = useState<boolean>(false);
     const [lat, setLat] = useState<number>(0);
     const [lng, setLng] = useState<number>(0);
     const center = React.useMemo(() => ({ lat: 45.346241, lng: 19.008960 }), []);
     const [isReserved, setIsReserved] = useState<boolean>(false);
      const [map, setMap] = useState<google.maps.Map | null>(null);
     const [secondaryTitle, setSecondaryTitle] = useState('');
-     const { user } = useUser();
+    const { user } = useUser();
+    const [reservations, setReservations] = useState<{startDate: string; endDate: string}[]>([]);
+    const [listingLiked, setListingLiked] = useState<boolean>(false);
   
     useEffect(() => {
         setTotalNightsCost(listing?.price * (reservationNights ? reservationNights : 1)); 
@@ -296,18 +302,20 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
                 const response = await fetch(`http://localhost:8080/api/listing/${id}`);
                 const data = await response.json();
                 const { listingData } = data.data; // Extract listing from data
-                console.log("Listing data: ", listingData);
                 setListing(listingData);
                 setSecondaryTitle(`${listingData.typeOfListing} u ${listingData.location.city}, ${listingData.location.country}`);
                 if (listingData && !handleListingFilterChangeCalled.current) {
-                    console.log("doslovno samo jednom treba da se pozove");
                     handleListingFilterChange(`${listingData.location.city}, ${listingData.location.country}`, dolazak, odlazak, gosti);
                     handleListingFilterChangeCalled.current = true;
 
                     const createdAt = dayjs(listingData.user.createdAt);
                     const yearsPassed = dayjs().diff(createdAt, 'year');
                     setYearsHosting(yearsPassed + 3);
+                    if(user && user.id === listingData.user.id) {
+                        setUserIsListingOwner(true);
+                    }
                 }
+
             } catch (error) {
                 console.error(error);
             } finally {
@@ -315,23 +323,13 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
             }
         };
 
-        const fetchReservation = async () => {
-            try {
-                const response = await fetch(`http://localhost:8080/api/user/${user?.id}/reservations/listing/${id}`);
-                const data = await response.json();
-                console.log("Reservation data: ", data);
-                const { isReserved } = data.data;
-                setIsReserved(isReserved);
-            } catch (error) {
-                console.error(error);
-            }
-        };
+       
 
         
-        fetchListing();
-        fetchReservation();
         
-    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress, user?.id]);
+        fetchListing();
+        
+    }, [id, dolazak, odlazak, gosti, handleListingFilterChange, API_KEY, listing?.location.fullAddress, user?.id, user]);
     
     useEffect(() => {
        
@@ -339,16 +337,79 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
         
     }, [map, lat, lng]);
 
+    
+    useEffect(() => {
+        const fetchReservation = async () => {
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/${user?.id}/reservations/listing/${id}/is-reserved`);
+                const data = await response.json();
+                const { isReserved } = data.data;
+                setIsReserved(isReserved);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        if(listing) {
+            fetchReservation();
+        }
+    }, [id, listing, user?.id, isReserved]);
+
+    useEffect(() => {
+        const fetchListingReservations = async () => {
+            console.log('fetching reservations');
+          try {
+            const response = await fetch(`http://localhost:8080/api/user/${user?.id}/reservations/listing/${id}`);
+            const data = await response.json();
+            const { reservations } = data.data;
+        
+            const updatedReservations = reservations.map((reservation: any) => ({
+              startDate: reservation.reservedFrom,
+              endDate: reservation.reservedUntil,
+            }));
+            setReservations(updatedReservations);
+        
+        
+          } catch (error) {
+            console.error(error);
+          }
+        };
+      
+        // Only fetch if listing exists 
+        if (listing) {
+          fetchListingReservations();
+        }
+      }, [id, user?.id, listing]);
+
+
+      useEffect(() => {
+        const fetchListingLiked = async () => {
+            try {
+                const accessToken = Cookies.get('access_token');
+                if(user && accessToken) {
+                    const response = await fetch(`http://localhost:8080/api/user/${user.id}/is-listing-liked/${listing?.id}`);
+                    if(response.ok) {
+                        const data = await response.json();
+                        const {isLiked} = data.data;
+                        setListingLiked(isLiked);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        if(listing && user) {
+            fetchListingLiked();
+        }
+      }, [listing, user]);
 
 
     useEffect(() => {
         const fetchLocation = async () => {
             try {
-                console.log("Listing location: ", listing?.location.fullAddress);
+                
                 const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(listing?.location.fullAddress)}&key=${API_KEY}`);
                 const data = await response.json();
-                console.log(data)
-                console.log("Location data: ", data);
                 center.lat = data.results[0].geometry.location.lat;
                     center.lng = data.results[0].geometry.location.lng;
                     setLat(center.lat);
@@ -376,9 +437,8 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     };
 
     const handleShowPhotos = () => {
-        console.log("show photos");
+
         setShowPhotos(!showPhotos);
-        console.log(showPhotos);
     };
 
     const handleDarkScreenChange = () => {
@@ -410,7 +470,6 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
     const handleReservationDolazakChange = (date: any, dateString: string) => {
         setReservationDolazak(dateString);
         const dolazakDate = dayjs(dateString, 'DD-MM-YYYY');
-        console.log(dateString);
         const odlazakDate = dayjs(reservationOdlazak, 'DD-MM-YYYY');
         const nights = odlazakDate.diff(dolazakDate, 'day');
         setReservationNights(nights);
@@ -418,7 +477,6 @@ const ListingPage: React.FC<ListingPageProps> = ({servicesFee, isLoaded, API_KEY
 
     const handleReservationOdlazakChange = (date: any, dateString: string) => {
         setReservationOdlazak(dateString);
-        console.log(dateString);
         const dolazakDate = dayjs(reservationDolazak, 'DD-MM-YYYY');
         const odlazakDate = dayjs(dateString, 'DD-MM-YYYY');
         const nights = odlazakDate.diff(dolazakDate, 'day');
@@ -484,7 +542,84 @@ const handleDeleteListing = async () => {
             toast.error('Morate biti prijavljeni da biste obrisali oglas');
         }
 };
+
+
+
+
+const handleDisabledOdlazakDate = (current: any) => {
+    if (!current) return false;
+  
+    const dayjsCurrent = dayjs(current);
+  
+    // Disable if the date is before today.
+    if (dayjsCurrent.isBefore(dayjs().startOf('day'))) return true;
+  
+    // Check if the current date falls within any reservation's period.
+    if (listing && reservations && reservations.length > 0) {
+      for (const reservation of reservations) {
+        const resStart = dayjs(reservation.startDate);
+        const resEnd = dayjs(reservation.endDate);
+        if (dayjsCurrent.isBetween(resStart, resEnd, 'day', '[]')) {
+          return true;
+        }
+      }
+    }
     
+    return false;
+  };
+
+  const handleDisabledDolazakDate = (current: any) => {
+    if (!current) return false;
+  
+    const dayjsCurrent = dayjs(current);
+  
+    // Disable if the date is before today.
+    if (dayjsCurrent.isBefore(dayjs().startOf('day'))) return true;
+  
+    // Check if the current date falls within any reservation's period.
+    if (listing && reservations && reservations.length > 0) {
+      for (const reservation of reservations) {
+        const resStart = dayjs(reservation.startDate);
+        const resEnd = dayjs(reservation.endDate);
+        if (dayjsCurrent.isBetween(resStart, resEnd, 'day', '[]')) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  };
+
+  const handleLikeListing = async () => {
+    const accessToken = Cookies.get('access_token');
+    if(user && accessToken) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/user/${user.id}/like-listing/${listing?.id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if(response.ok) {
+                const data = await response.json();
+                const {isLiked} = data.data;
+                console.log("isLiked" + isLiked);
+                if(isLiked === true) {
+                    toast.success('Oglas spremljen');
+                } else {
+                    toast.success('Oglas uklonjen iz spremljenih');
+                }
+                setListingLiked(isLiked);
+            } else {
+                toast.error('Došlo je do greške prilikom spremanja oglasa');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        toast.error('Morate biti prijavljeni da biste spremili oglas');
+    }
+  };
 
 
 return (
@@ -500,10 +635,18 @@ return (
                         <div className='title-container flex justify-between items-center'>
                             {listing && <h1 className='font-bold text-3xl'>{listing.title}</h1>}
                             <div className='flex align-center gap-2'>
-                            <div className='like-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
-                                <LuHeart className='w-6 h-6 ' />
-                                <p className='underline underline-offset-2 text-lg'>Spremi</p>
-                            </div>
+                            {listingLiked ? (
+                                <div onClick={handleLikeListing} className='like-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-50 hover:text-black'>
+                                    <LuHeart className='w-6 h-6 text-red-500' />
+                                    <p className='underline underline-offset-2 text-lg'>Spremljen</p>
+                                </div>
+                            ) : (
+                                <div onClick={handleLikeListing} className='like-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
+                                    <LuHeart className='w-6 h-6' />
+                                    <p className='underline underline-offset-2 text-lg'>Spremi</p>
+                                </div>
+                            )}
+                            
                             {user && user.id === listing?.user.id && 
                                  <div onClick={handleDeleteListing} className='delete-container flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 hover:text-red-500'>
                                  <FaTrash className='w-6 h-6' />
@@ -701,7 +844,7 @@ return (
                                                     placeholder='Dolazak'
                                                     size='large' 
                                                     onChange={handleReservationDolazakChange}
-                                                    disabledDate={(current) => current && current < dayjs().startOf('day')}
+                                                    disabledDate={handleDisabledDolazakDate}
                                                     />
                                                     
                                             </div>
@@ -719,7 +862,7 @@ return (
                                                     placeholder='Odlazak'
                                                     size='large' 
                                                     onChange={handleReservationOdlazakChange}
-                                                    disabledDate={(current) => current && current < dayjs().startOf('day').add(1, 'day')}
+                                                    disabledDate={handleDisabledOdlazakDate}
                                                     />
                                                     
                                             </div>
@@ -751,16 +894,23 @@ return (
                                         </div>  
                                     </div>            
                             </div>
-                            {isReserved ? (
-                                <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
-                                    <button className='w-3/4 bg-red-500 text-white font-bold p-2 rounded-lg '>Oglas je već rezerviran</button>
-                                </div>
-                            ) : (
-                                <div className='flex flex-col items-center justify-center reservation-button-container mt-4 '>
-                                    <button onClick={handleNavigateToBookingPage} className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg '>Rezerviraj</button>
-                                    <p className='mt-2'>Još vam nećemo ništa naplatiti</p>
-                                </div>
-                            )}
+                            {userIsListingOwner ? (
+                                  <div className='flex flex-col items-center justify-center reservation-button-container mt-4'>
+                                    <button className='w-3/4 bg-red-500 text-white font-bold p-2 rounded-lg'>Oglas je vaš</button>
+                                  </div>
+                                ) : (
+                                  isReserved ? (
+                                    <div className='flex flex-col items-center justify-center reservation-button-container mt-4'>
+                                      <button className='w-3/4 bg-red-500 text-white font-bold p-2 rounded-lg'>Oglas je već rezerviran</button>
+                                    </div>
+                                  ) : (
+                                    <div className='flex flex-col items-center justify-center reservation-button-container mt-4'>
+                                      <button onClick={handleNavigateToBookingPage} className='w-3/4 bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white font-bold p-2 rounded-lg'>Rezerviraj</button>
+                                      <p className='mt-2'>Još vam nećemo ništa naplatiti</p>
+                                    </div>
+                                  )
+                                )}
+                            
                            
                             <div className='flex flex-col items-center justify-center cost-container mt-4 border-b-2 pb-4'>
                                 <div className='flex justify-between w-full mt-2 '>
