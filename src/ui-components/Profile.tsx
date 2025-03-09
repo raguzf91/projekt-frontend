@@ -95,6 +95,8 @@ interface ProfileProps {
     handleUserChange: (user: User) => void;
     listings: Listing[];
     setReservations: React.Dispatch<React.SetStateAction<Reservation[]>>;
+    likedListings: Listing[];
+    userHostedListings: Listing[];
     // MORAS DODATI ALLREVIEWS (NAPRAVI QUERY BACKEND KOJI CE POBROJATI SVE REVIEWS NA LISTINGE SA OVIM USER IDOM,  )
     // DODAJ AVERAGE RATING SCORE (NAPRAVI QUERY BACKEND KOJI CE POBROJATI SVE REVIEWS NA LISTINGE SA OVIM USER IDOM,  POBROJAT NJIHOVE OCJENE I IZRACUNATI PROSJEK)
     //
@@ -102,7 +104,7 @@ interface ProfileProps {
 
 
 
-const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownProfile, handleShowAllReviews, handleUserChange, listings, setReservations}) => {
+const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownProfile, handleShowAllReviews, handleUserChange, listings, setReservations, likedListings, userHostedListings}) => {
     const [numberOfReviews, setNumberOfReviews] = useState<number | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [reviews , setReviews] = useState<Review[]>([]);
@@ -272,8 +274,61 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                     <div className='mt-8 border-b-2 pb-8'>
                         <p>{user?.bio}</p>
                     </div>
-                    <div className='flex flex-col mt-8'>
-                        <div className='flex justify-between'>
+                    <div className='flex flex-col mt-12'>
+                    <div className="user-hosted-listings flex flex-col mt-8">
+                            <h2 className='text-3xl'>{`${ownProfile ? 'Moji' : `${user?.gender === 'male' ? 'Njegovi' : 'Njezini'}`} oglasi`}</h2>
+                            {userHostedListings.length > 0 ? 
+                            <div className="flex flex-wrap gap-4 mt-4">
+                                {userHostedListings.map((listing, index) => (
+                                  <div className='flex flex-col w-1/3'>
+                                      <HeroBox key={index} listing={listing} brojNocenja={listing.numberOfNights} navigateToListing={() => navigate(`/listing/${listing.id}`)} />
+                                 </div>
+                                    
+                                ))}
+                            </div> : <p>Nema oglasa</p> 
+                          }
+                             
+                        </div>
+                        <div className="listings flex flex-col mt-12">
+                            <h2 className='text-3xl'>{`${ownProfile ? 'Moje' : `${user?.gender === 'male' ? 'Njegove' : 'Njezine'}`} rezervacije`}</h2>
+                            {listings.length > 0 ? 
+                            <div className="flex flex-wrap gap-4 mt-4">
+                                {listings.map((listing, index) => (
+                                  <div className='flex flex-col w-1/3'>
+                                      <HeroBox  key={index} listing={listing} brojNocenja={listing.numberOfNights} navigateToListing={() => navigate(`/listing/${listing.id}`)} />
+                                        {listing.canceled ? <p>Rezervacija je otkazana</p> : (
+                                          dayjs(currentDate).isBefore(dayjs(listing.reservedFrom)) ? (
+                                            <button onClick={() => handleCancelReservation(listing.reservationId)} className=' bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white p-4 rounded-lg shadow-lg mt-4 w-1/2'>Otkaži rezervaciju</button> 
+                                         ) : dayjs(currentDate).isAfter(dayjs(listing.reservedUntil)) ? (
+                                           <p>Rezervacija je završila</p>
+                                         ) : <p>Rezervacija je u tijeku</p>
+                                        )}
+                                       
+                                        
+                                        
+                                  </div>
+                                    
+                                ))}
+                            </div> : <p>Nema rezervacija</p> 
+                          }
+                             
+                        </div>
+                        <div className="liked-listings flex flex-col mt-12">
+                            <h2 className='text-3xl'>{`${ownProfile ? 'Sviđa mi se' : `Sviđa ${user?.gender === 'male' ? 'mu' : 'joj'} se`}`}</h2>
+                            {likedListings.length > 0 ? 
+                            <div className="flex flex-wrap gap-4 mt-4">
+                                {likedListings.map((listing, index) => (
+                                  <div className='flex flex-col w-1/3'>
+                                      <HeroBox  key={index} listing={listing} brojNocenja={listing.numberOfNights} navigateToListing={() => navigate(`/listing/${listing.id}`)} />
+                                 </div>
+                                    
+                                ))}
+                            </div> : <p>Nema oglasa u Sviđa mi se</p> 
+                          }
+                             
+                        </div>
+
+                        <div className='flex justify-between mt-12'>
                             <h2 className='text-3xl'>{`${ownProfile ? 'Moje' : `${user?.gender === 'male' ? 'Njegove' : 'Njezine'}`} recenzije`}</h2>
                             
                         </div>
@@ -301,30 +356,6 @@ const Profile: React.FC<ProfileProps> = ({user, listingPage, yearsHosting, ownPr
                           
                            : <p>Nema recenzija</p>}
                                 
-                        </div>
-                        <div className="listings flex flex-col mt-8">
-                            <h2 className='text-3xl'>{`${ownProfile ? 'Moje' : `${user?.gender === 'male' ? 'Njegove' : 'Njezine'}`} rezervacije`}</h2>
-                            {listings.length > 0 ? 
-                            <div className="flex flex-wrap gap-4 mt-4">
-                                {listings.map((listing, index) => (
-                                  <div className='flex flex-col w-1/3'>
-                                      <HeroBox  key={index} listing={listing} brojNocenja={listing.numberOfNights} navigateToListing={() => navigate(`/listing/${listing.id}`)} />
-                                        {listing.canceled ? <p>Rezervacija je otkazana</p> : (
-                                          dayjs(currentDate).isBefore(dayjs(listing.reservedFrom)) ? (
-                                            <button onClick={() => handleCancelReservation(listing.reservationId)} className=' bg-gradient-to-r from-red-500 to-pink-500 hover:bg-red-700 transition-all duration-100 text-white p-4 rounded-lg shadow-lg mt-4 w-1/2'>Otkaži rezervaciju</button> 
-                                         ) : dayjs(currentDate).isAfter(dayjs(listing.reservedUntil)) ? (
-                                           <p>Rezervacija je završila</p>
-                                         ) : <p>Rezervacija je u tijeku</p>
-                                        )}
-                                       
-                                        
-                                        
-                                  </div>
-                                    
-                                ))}
-                            </div> : <p>Nema rezervacija</p> 
-                          }
-                             
                         </div>
                         
                     </div>

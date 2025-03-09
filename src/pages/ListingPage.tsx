@@ -1011,7 +1011,7 @@ return (
                         </div>  
                     </div>
                         <div className='meet-your-host-container mt-8 w-full'>
-                            <Profile handleUserChange={() => {}} listings={[]} user={listing?.user} listingPage={true} yearsHosting={yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
+                            <Profile userHostedListings={[]} likedListings={[]} handleUserChange={() => {}} listings={[]} user={listing?.user} listingPage={true} yearsHosting={yearsHosting} ownProfile={false} handleShowAllReviews={handleShowAllReviews} />
                         </div>  
                     </div>
                     

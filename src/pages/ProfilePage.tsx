@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import { useNavbarFilter } from "../context/NavbarFilterProvider";
 import { useParams} from "react-router-dom";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 interface User {
     id: number;
@@ -91,6 +92,8 @@ const ProfilePage = () => {
     const [yearsHosting, setYearsHosting] = useState(0);
     const [listings, setListings] = useState<Listing[]>([]);
     const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [userHostedListings, setUserHostedListings] = useState<Listing[]>([]);
+    const [likedListings, setLikedListings] = useState<Listing[]>([]);
 
     const { setHideNavbar} = useNavbarFilter();
 
@@ -186,6 +189,69 @@ const ProfilePage = () => {
     }, [paramsId, accessToken]);
 
 
+    useEffect(() => {
+        const fetchLikedListings = async () => {
+            console.log("fetching liked listings");
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/${paramsId}/liked-listings` , 
+    
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'AUTHORIZATION' : `Bearer ${accessToken}` 
+                        }
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    const {listings} = data.data;
+                    console.log("listings: " + JSON.stringify(listings));
+                    setLikedListings(listings);
+                } else {
+                    console.error('Error fetching data:', response.statusText);
+                    toast.error('Pogreška prilikom dohvaćanja podataka');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        if(accessToken) {
+            fetchLikedListings();
+        }
+    }, []);
+
+
+    useEffect(() => {
+        const fetchUserHostedListings = async () => {
+            console.log("fetching user hosted listings");
+            try {
+                const response = await fetch(`http://localhost:8080/api/user/${paramsId}/listings` , 
+    
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'AUTHORIZATION' : `Bearer ${accessToken}` 
+                        }
+                    }
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    const {listings} = data.data;
+                    console.log("listings: " + JSON.stringify(listings));
+                    setUserHostedListings(listings);
+                } else {
+                    console.error('Error fetching data:', response.statusText);
+                    toast.error('Pogreška prilikom dohvaćanja podataka');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+    }, []);
+
+
 
    
    
@@ -194,7 +260,7 @@ const ProfilePage = () => {
            
             {(userById) &&
              <div className="flex flex-col w-full h-full items-center justify-center">
-                <Profile  setReservations={setReservations} listings={listings} user={userById} handleUserChange={handleUserChange} listingPage={false} yearsHosting={yearsHosting} ownProfile={ownProfile} handleShowAllReviews={handleShowAllReviews} />
+                <Profile userHostedListings={userHostedListings} likedListings={likedListings}  setReservations={setReservations} listings={listings} user={userById} handleUserChange={handleUserChange} listingPage={false} yearsHosting={yearsHosting} ownProfile={ownProfile} handleShowAllReviews={handleShowAllReviews} />
             </div>
             }
             
